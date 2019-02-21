@@ -1,0 +1,433 @@
+#include "sz_compress_3d.hpp"
+
+struct DSize_3d{
+	size_t d1;
+	size_t d2;
+	size_t d3;
+	size_t num_elements;
+	int block_size;
+	int max_num_block_elements;
+	size_t num_x;
+	size_t num_y;
+	size_t num_z;
+	size_t num_blocks;
+	size_t dim0_offset;
+	size_t dim1_offset;
+	DSize_3d(size_t r1, size_t r2, size_t r3, int bs){
+		d1 = r1, d2 = r2, d3 = r3;
+		num_elements = r1 * r2 * r3;
+		block_size = bs;
+		max_num_block_elements = bs * bs * bs;
+		num_x = (r1 - 1) / block_size + 1;
+		num_y = (r2 - 1) / block_size + 1;
+		num_z = (r3 - 1) / block_size + 1;
+		num_blocks = num_x * num_y * num_z;
+		dim0_offset = r2 * r3;
+		dim1_offset = r3;
+	}
+};
+
+struct meanInfo{
+	bool use_mean;
+	float mean;
+	meanInfo(bool use, float mean_){
+		use_mean = use;
+		mean = mean_;
+	}
+};
+
+template <typename T>
+inline void 
+compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, float * reg_params_pos){
+	/*Calculate regression coefficients*/
+	const T * cur_data_pos = data_pos;
+	float fx = 0.0;
+	float fy = 0.0;
+	float fz = 0.0;
+	float f = 0;
+	float sum_x, sum_y; 
+	T curData;
+	for(int i=0; i<size_x; i++){
+		sum_x = 0;
+		for(int j=0; j<size_y; j++){
+			sum_y = 0;
+			for(int k=0; k<size_z; k++){
+				curData = *cur_data_pos;
+				sum_y += curData;
+				fz += curData * k;
+				cur_data_pos ++;
+			}
+			fy += sum_y * j;
+			sum_x += sum_y;
+			cur_data_pos += (dim1_offset - size_z);
+		}
+		fx += sum_x * i;
+		f += sum_x;
+		cur_data_pos += (dim0_offset - size_y * dim1_offset);
+	}
+	float coeff = 1.0 / (size_x * size_y * size_z);
+	reg_params_pos[0] = (2 * fx / (size_x - 1) - f) * 6 * coeff / (size_x + 1);
+	reg_params_pos[1] = (2 * fy / (size_y - 1) - f) * 6 * coeff / (size_y + 1);
+	reg_params_pos[2] = (2 * fz / (size_z - 1) - f) * 6 * coeff / (size_z + 1);
+	reg_params_pos[3] = f * coeff - ((size_x - 1) * reg_params_pos[0] / 2 + (size_y - 1) * reg_params_pos[1] / 2 + (size_z - 1) * reg_params_pos[2] / 2);
+}
+
+inline float
+regression_predict_3d(const float * reg_params_pos, int x, int y, int z){
+	return reg_params_pos[0] * x + reg_params_pos[1] * y + reg_params_pos[2] * z + reg_params_pos[3];
+}
+
+template<typename T>
+inline T
+lorenzo_predict_3d(const T * data_pos, size_t dim0_offset, size_t dim1_offset){
+	return data_pos[-1] + data_pos[-dim1_offset] + data_pos[-dim0_offset] 
+	- data_pos[-dim1_offset - 1] - data_pos[-dim0_offset - 1] 
+	- data_pos[-dim0_offset - dim1_offset] + data_pos[-dim0_offset - dim1_offset - 1];
+}
+
+template<typename T>
+inline void
+sz_block_error_estimation_3d(const T * data_pos, const float * reg_params_pos, const meanInfo& mean_info, int x, int y, int z, size_t dim0_offset, size_t dim1_offset, float noise, double& err_reg, double& err_lorenzo){
+	const T * cur_data_pos = data_pos + x*dim0_offset + y*dim1_offset + z;
+	T cur_data = *cur_data_pos;
+	err_reg += fabs(cur_data - regression_predict_3d(reg_params_pos, x, y, z));
+	err_lorenzo += mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset))) : fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset) + noise);
+}
+
+template<typename T>
+inline int
+sz_blockwise_selection_3d(const T * data_pos, const meanInfo& mean_info, size_t dim0_offset, size_t dim1_offset, int min_size, float noise, const float * reg_params_pos){
+	double err_reg = 0;
+	double err_lorenzo = 0;
+	for(int i=1; i<min_size; i++){
+		int bmi = min_size - i;
+		sz_block_error_estimation_3d(data_pos, reg_params_pos, mean_info, i, i, i, dim0_offset, dim1_offset, noise, err_reg, err_lorenzo);
+		sz_block_error_estimation_3d(data_pos, reg_params_pos, mean_info, i, i, bmi, dim0_offset, dim1_offset, noise, err_reg, err_lorenzo);
+		sz_block_error_estimation_3d(data_pos, reg_params_pos, mean_info, i, bmi, i, dim0_offset, dim1_offset, noise, err_reg, err_lorenzo);
+		sz_block_error_estimation_3d(data_pos, reg_params_pos, mean_info, i, bmi, bmi, dim0_offset, dim1_offset, noise, err_reg, err_lorenzo);
+	}
+	return err_reg < err_lorenzo;
+}
+
+inline void
+compress_regression_coefficient_3d(){
+
+}
+
+// return quantization index, no decompression data (regression)
+template<typename T>
+inline int
+quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos){
+	double diff = cur_data - pred;
+	double quant_diff = fabs(diff) / precision + 1;
+	if(quant_diff < capacity){
+		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
+		int quant_index = (int)(quant_diff/2) + intv_radius;
+		T decompressed_data = pred + 2 * (quant_index - intv_radius) * precision; 
+		if(fabs(decompressed_data - cur_data) <= precision) return quant_index;
+ 	}
+ 	*(unpredictable_data_pos++) = cur_data;
+ 	return 0;
+}
+
+template<typename T>
+inline void
+block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_pos, double precision, int capacity, 
+	int intv_radius, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){
+	const T * cur_data_pos = data_pos;
+	for(int i=0; i<size_x; i++){
+		for(int j=0; j<size_y; j++){
+			for(int k=0; k<size_z; k++){
+				float pred = regression_predict_3d(reg_params_pos, i, j, k);
+				*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos);
+				cur_data_pos ++;
+			}
+			cur_data_pos += dim1_offset - size_z;
+		}
+		cur_data_pos += dim0_offset - size_y * dim1_offset;
+	}
+}
+
+// quantize with decompression data (Lorenzo)
+template<typename T>
+inline int
+quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos, T * decompressed){
+	double diff = cur_data - pred;
+	double quant_diff = fabs(diff) / precision + 1;
+	if(quant_diff < capacity){
+		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
+		int quant_index = (int)(quant_diff/2) + intv_radius;
+		T decompressed_data = pred + 2 * (quant_index - intv_radius) * precision; 
+		*decompressed = decompressed_data;
+		if(fabs(decompressed_data - cur_data) <= precision) return quant_index;
+ 	}
+ 	*decompressed = cur_data;
+ 	*(unpredictable_data_pos++) = cur_data;
+ 	return 0;
+}
+
+// block-independant lorenzo pred & quant
+template<typename T>
+inline void
+block_pred_and_quant_lorenzo_3d(const T * data_pos, T * buffer, int buffer_block_size, double precision, int capacity, int intv_radius, 
+	int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){
+	const T * cur_data_pos = data_pos;
+	T * buffer_pos = buffer + buffer_block_size*buffer_block_size + buffer_block_size + 1;
+	for(int i=0; i<size_x; i++){
+		for(int j=0; j<size_y; j++){
+			memcpy(buffer_pos, cur_data_pos, sizeof(T)*size_z);
+			T * cur_buffer_pos = buffer_pos;
+			for(int k=0; k<size_z; k++){
+				float pred = lorenzo_predict_3d(cur_buffer_pos, buffer_block_size*buffer_block_size, buffer_block_size);
+				*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos, cur_buffer_pos);
+				cur_data_pos ++;
+				cur_buffer_pos ++;
+			}
+			buffer_pos += buffer_block_size;
+			cur_data_pos += dim1_offset - size_z;
+		}
+		buffer_pos += buffer_block_size*buffer_block_size - size_y*buffer_block_size;
+		cur_data_pos += dim0_offset - size_y * dim1_offset;
+	}
+}
+
+// return regression count
+template<typename T>
+size_t
+prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanInfo& mean_info, double precision,
+	int capacity, int intv_radius, float * reg_params, unsigned char * indictor, int * type, T *& unpredictable_data_pos){
+	const float noise = precision * LorenzeNoise3d;
+	int * type_pos = type;
+	unsigned char * indictor_pos = indictor;
+	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
+	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
+	float * reg_params_pos = reg_params;
+	const T * x_data_pos = data;
+	size_t reg_count = 0;
+	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
+	for(size_t i=0; i<size.num_x; i++){
+		const T * y_data_pos = x_data_pos;
+		for(size_t j=0; j<size.num_y; j++){
+			const T * z_data_pos = y_data_pos;
+			for(size_t k=0; k<size.num_z; k++){
+				int size_x = ((i+1)*size.block_size < size.d1) ? size.block_size : size.d1 - i*size.block_size;
+				int size_y = ((j+1)*size.block_size < size.d2) ? size.block_size : size.d2 - j*size.block_size;
+				int size_z = ((k+1)*size.block_size < size.d3) ? size.block_size : size.d3 - k*size.block_size;
+				int min_size = MIN(size_x, size_y);
+				min_size = MIN(min_size, size_z);
+				// size of block is less than some threshold
+				if(min_size < RegThresholdSize){
+					*indictor_pos = 0;
+				}
+				else{
+					// cout << "compute_regression_coeffcients_3d\n";
+					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
+					// cout << "sz_blockwise_selection_3d\n";
+					*indictor_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
+				}
+				if(*indictor_pos){
+					// regression
+					// cout << "block_pred_and_quant_regression_3d\n";
+					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, capacity, intv_radius, 
+						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
+					reg_count ++;
+					reg_params_pos += 4;
+				}
+				else{
+					// Lorenzo
+					// cout << "block_pred_and_quant_lorenzo_3d\n";
+					block_pred_and_quant_lorenzo_3d(z_data_pos, pred_buffer, size.block_size+1, precision, capacity_lorenzo, intv_radius, 
+						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
+				}
+				indictor_pos ++;
+				z_data_pos += size_x;
+			}
+			y_data_pos += size.dim1_offset;
+		}
+		x_data_pos += size.dim0_offset;
+	}
+	free(pred_buffer);
+	return reg_count;
+}
+
+template<typename T>
+float
+sample_rough_mean(const T * data, size_t r1, size_t r2, size_t r3, size_t sample_distance){
+	double mean = 0;
+	size_t len = r1 * r2 * r3;
+	const T * data_pos = data;
+	size_t offset_count = 0;
+	size_t offset_count_2 = 0;
+	size_t mean_count = 0;
+	while(data_pos - data < len){
+		mean += *data_pos;
+		mean_count ++;
+		data_pos += sample_distance;
+		offset_count += sample_distance;
+		offset_count_2 += sample_distance;
+		if(offset_count >= r3){
+			offset_count = 0;
+			data_pos -= 1;
+		}
+		if(offset_count_2 >= r2 * r3){
+			offset_count_2 = 0;
+			data_pos -= 1;
+		}
+	}
+	if(mean_count > 0) mean /= mean_count;
+	return mean;
+}
+
+// copied from conf.c
+unsigned int 
+round_up_power_of_2(unsigned int base){
+  base -= 1;
+  base = base | (base >> 1);
+  base = base | (base >> 2);
+  base = base | (base >> 4);
+  base = base | (base >> 8);
+  base = base | (base >> 16);
+  return base + 1;
+} 
+
+unsigned int
+estimate_quantization_intervals(const vector<size_t>& intervals, size_t sample_count){
+	size_t target = sample_count * QuantIntvAccThreshold;
+	size_t sum = 0;
+	size_t i = 0;
+	for(i=0;i<intervals.size();i++){
+		sum += intervals[i];
+		if(sum>target)
+			break;
+	}
+	if(i == intervals.size()) i = intervals.size()-1;
+	unsigned int accIntervals = 2*(i+1);
+	unsigned int num_intervals =  (i == intervals.size()) ? 2*intervals.size() : 2*round_up_power_of_2(i);
+	return (num_intervals > 32) ? num_intervals : 32;
+}
+
+float
+estimate_mean_freq_and_position(const vector<size_t>& freq_intervals, double precision, size_t sample_count, float& mean_guess){
+	size_t max_sum = 0;
+	size_t max_index = 0;
+	size_t tmp_sum = 0;
+	for(size_t i=1; i<freq_intervals.size()-2; i++){
+		tmp_sum = freq_intervals[i] + freq_intervals[i+1];
+		if(tmp_sum > max_sum){
+			max_sum = tmp_sum;
+			max_index = i;
+		}
+	}
+	mean_guess += precision * (ptrdiff_t)(max_index + 1 - (freq_intervals.size() >> 1));
+	return max_sum * 1.0 / sample_count;
+}
+
+template<typename T>
+meanInfo 
+optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, int& capacity){
+	float mean_rough = sample_rough_mean(data, r1, r2, r3, sqrt(r1*r2*r3));
+	vector<size_t> intervals = vector<size_t>(QuantIntvSampleCapacity, 0);
+	vector<size_t> freq_intervals = vector<size_t>(QuantIntvMeanCapacity, 0);
+	size_t freq_count = 0;
+	size_t sample_count = 0;
+	size_t sample_distance = QuantIntvSampleDistance;
+	size_t offset_count = sample_distance - 2; // count r3 offset
+	size_t offset_count_2 = 0;
+	size_t r23 = r2 * r3;
+	size_t len = r1 * r23;
+	const float *data_pos = data + r23 + r3 + offset_count;
+	size_t n1_count = 1, n2_count = 1; // count i,j sum
+	T pred_value = 0;
+	double mean_diff = 0;
+	ptrdiff_t freq_index = 0;
+	size_t pred_index = 0;
+	float pred_err = 0;
+	int radius = (QuantIntvMeanCapacity >> 1);
+	while(data_pos - data < len){
+		pred_value = lorenzo_predict_3d(data_pos, r23, r3);
+		pred_err = fabs(pred_value - *data_pos);
+		if(pred_err < precision) freq_count ++;
+		pred_index = (pred_err/precision+1)/2;
+		if(pred_index >= intervals.size()){
+			pred_index = intervals.size() - 1;
+		}
+		intervals[pred_index]++;
+
+		mean_diff = *data_pos - mean_rough;
+		if(mean_diff > 0) freq_index = (ptrdiff_t)(mean_diff/precision) + radius;
+		else freq_index = (ptrdiff_t)(mean_diff/precision) - 1 + radius;
+		if(freq_index <= 0){
+			freq_intervals[0] ++;
+		}
+		else if(freq_index >= freq_intervals.size()){
+			freq_intervals[freq_intervals.size() - 1] ++;
+		}
+		else{
+			freq_intervals[freq_index] ++;
+		}
+		offset_count += sample_distance;
+		if(offset_count >= r3){
+			n2_count ++;
+			if(n2_count == r2){
+				n1_count ++;
+				n2_count = 1;
+				data_pos += r3;
+			}
+			offset_count_2 = (n1_count + n2_count) % sample_distance;
+			data_pos += (r3 + sample_distance - offset_count) + (sample_distance - offset_count_2);
+			offset_count = (sample_distance - offset_count_2);
+			if(offset_count == 0) offset_count ++;
+		}
+		else data_pos += sample_distance;
+		sample_count ++;
+	}	
+	float pred_freq = freq_count * 1.0/ sample_count;
+	float mean_guess = mean_rough;
+	float mean_freq = estimate_mean_freq_and_position(freq_intervals, precision, sample_count, mean_guess);
+	capacity = estimate_quantization_intervals(intervals, sample_count);
+	if(mean_freq > 0.5 || mean_freq > pred_freq){
+		double sum = 0.0;
+		size_t mean_count = 0;
+		for(size_t i=0; i<len; i++){
+			if(fabs(data[i] - mean_guess) <= precision){
+				sum += data[i];
+				mean_count ++;
+			}
+		}
+		float mean = 0;
+		if(mean_count > 0) mean = sum / mean_count;
+		return meanInfo(true, mean);
+	}
+	return meanInfo(false, 0);
+}
+
+// perform block-independant compression
+template<typename T>
+unsigned char *
+sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision){
+	DSize_3d size(r1, r2, r3, BSIZE);
+	int capacity = 0; // num of quant intervals
+	meanInfo mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
+	cout << "Capacity = " << capacity << "\tmean = " << mean_info.use_mean << ", " << mean_info.mean << endl; 
+	int intv_radius = (capacity >> 1);
+	int * type = (int *) malloc(size.num_elements * sizeof(int));
+	T * unpredictable_data = (T *) malloc((0.05*size.num_elements) * sizeof(T));
+	unsigned char * indictor = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
+	float * reg_params = (float *) malloc(4*size.num_blocks*sizeof(float));
+	T * unpredictable_data_pos = unpredictable_data;
+	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, reg_params, indictor, type, unpredictable_data_pos);
+	cout << "Reg count = " << reg_count << ", Lorenzo count = " << size.num_blocks - reg_count << "\nUnpred count = " << (unpredictable_data_pos - unpredictable_data) << endl;
+	unsigned char * result = NULL;
+	// TODO: change to real size
+	result = (unsigned char *) malloc(size.num_elements*sizeof(T)*2);
+	
+	return result;
+}
+
+template 
+unsigned char * 
+sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision);
+
+
+
+
