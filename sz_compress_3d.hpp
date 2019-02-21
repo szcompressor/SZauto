@@ -1,10 +1,9 @@
 #ifndef _sz_compress_3d_h
 #define _sz_compress_3d_h
 
-#include "utils.hpp"
+#include "sz_compression_utils.hpp"
 #include "sz_def.hpp"
 #include "sz_prediction.hpp"
-#include <cstddef>
 #include <vector>
 
 template<typename T>

@@ -1,5 +1,6 @@
 #include "sz_compress_3d.hpp"
 #include "sz_decompress_3d.hpp"
+#include "utils.hpp"
 
 int main(int argc, char ** argv){
     int status;

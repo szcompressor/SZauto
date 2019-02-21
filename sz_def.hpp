@@ -1,5 +1,13 @@
 #ifndef _sz_def_h
 #define _sz_def_h
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <cstddef>
+using namespace std;
 
 struct DSize_3d{
 	size_t d1;
@@ -41,14 +49,7 @@ struct meanInfo{
 #define MAX(a, b) a>b?a:b
 #define MIN(a, b) a<b?a:b
 
-#define QuantIntvMeanCapacity 8192
-#define QuantIntvSampleDistance 100
-#define QuantIntvSampleCapacity 32768
-#define QuantIntvAccThreshold 0.999
-#define BSIZE3d 8
 #define RegCoeffNum3d 4
-#define RegThresholdSize3d 4
-#define LorenzeNoise3d 1.22
 
 #endif
 
