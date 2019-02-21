@@ -1,21 +1,11 @@
 #ifndef _sz_compress_3d_h
 #define _sz_compress_3d_h
 
-// #include "sz.h"
-// #include "Huffman.h"
 #include "utils.hpp"
+#include "sz_def.hpp"
+#include "sz_prediction.hpp"
 #include <cstddef>
 #include <vector>
-
-#define MAX(a, b) a>b?a:b
-#define MIN(a, b) a<b?a:b
-#define QuantIntvMeanCapacity 8192
-#define QuantIntvSampleDistance 100
-#define QuantIntvSampleCapacity 32768
-#define QuantIntvAccThreshold 0.999
-#define BSIZE 6
-#define RegThresholdSize 4
-#define LorenzeNoise3d 1.22
 
 template<typename T>
 unsigned char *

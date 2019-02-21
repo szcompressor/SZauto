@@ -1,4 +1,5 @@
 #include "sz_compress_3d.hpp"
+#include "sz_decompress_3d.hpp"
 
 int main(int argc, char ** argv){
     int status;
@@ -17,12 +18,14 @@ int main(int argc, char ** argv){
     cout << "value range = " << max - min << endl;
     cout << "precision = " << eb*(max - min) << endl;
     unsigned char * result =  sz_compress_3d(data, r1, r2, r3, eb*(max - min));
+    float * dec_data = sz_decompress_3d<float>(result, r1, r2, r3);
     // std::cout << "compression done\n";
     // float * dec_data = trilinear_interpolation(comp_data, bs, n1, n2, n3);
     // float * dec_data = tricubic_interpolation(comp_data, bs, n1, n2, n3);
     // std::cout << "decompression done\n";
     // writefile<float>(strcat(argv[1], ".out"), data, nbEle);
-    // verify(data, dec_data, nbEle, out_size);
-    if(result) free(result);
+    verify(data, dec_data, nbEle);
+    free(result);
     free(data);
+    free(dec_data);
 }

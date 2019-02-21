@@ -9,6 +9,38 @@
 #include <cmath>
 using namespace std;
 
+template <typename T>
+inline void
+write_variable_to_dst(unsigned char *& dst, const T& var){
+    memcpy(dst, &var, sizeof(T));
+    dst += sizeof(T);
+}
+
+template <typename T>
+inline void
+write_array_to_dst(unsigned char *& dst, const T * array, size_t length){
+    memcpy(dst, array, length*sizeof(T));
+    dst += length*sizeof(T);
+}
+
+template <typename T>
+inline T
+read_variable_from_src(const unsigned char *& src){
+    T var;
+    memcpy(&var, src, sizeof(T));
+    src += sizeof(T);
+    return var;
+}
+
+template <typename T>
+inline T *
+read_array_from_src(const unsigned char *& src, size_t length){
+    T * array = (T *) malloc(length * sizeof(T));
+    memcpy(array, src, length*sizeof(T));
+    src += length*sizeof(T);
+    return array;
+}
+
 template<typename Type>
 Type * readfile(char * file, size_t * num){
 	std::ifstream fin(file, std::ios::binary);
@@ -49,7 +81,7 @@ void writefile(char * file, Type * data, size_t num_elements){
 }
 
 template<typename Type>
-void verify(Type * ori_data, Type * data, size_t num_elements, size_t out_size){
+void verify(Type * ori_data, Type * data, size_t num_elements){
     size_t i = 0;
     Type Max = 0, Min = 0, diffMax = 0;
     Max = ori_data[0];
@@ -57,8 +89,7 @@ void verify(Type * ori_data, Type * data, size_t num_elements, size_t out_size){
     diffMax = fabs(data[0] - ori_data[0]);
     size_t k = 0;
     double sum1 = 0, sum2 = 0;
-    for (i = 0; i < num_elements; i++)
-    {
+    for (i = 0; i < num_elements; i++){
         sum1 += ori_data[i];
         sum2 += data[i];
     }
@@ -98,7 +129,6 @@ void verify(Type * ori_data, Type * data, size_t num_elements, size_t out_size){
     double range = Max - Min;
     double psnr = 20*log10(range)-10*log10(mse);
     double nrmse = sqrt(mse)/range;
-    double compressionRatio = 1.0*num_elements * sizeof(Type) / out_size;
 
     printf ("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
     printf ("Max absolute error = %.10f\n", diffMax);
@@ -106,7 +136,6 @@ void verify(Type * ori_data, Type * data, size_t num_elements, size_t out_size){
     printf ("Max pw relative error = %f\n", maxpw_relerr);
     printf ("PSNR = %f, NRMSE= %.20G\n", psnr,nrmse);
     printf ("acEff=%f\n", acEff);   
-    printf ("compressionRatio=%f\n", compressionRatio);
 }
 
 #endif
