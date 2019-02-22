@@ -389,7 +389,9 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);;
 	// write_array_to_dst(compressed_pos, indicator, size.num_blocks);
 	write_array_to_dst(compressed_pos, reg_params, RegCoeffNum3d*reg_count);
-	write_array_to_dst(compressed_pos, type, size.num_elements);
+	// write_array_to_dst(compressed_pos, type, size.num_elements);
+	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
+	cout << "Compressed size = " << compressed_pos - compressed << ", ratio = " << (size.num_elements*sizeof(T)) * 1.0/(compressed_pos - compressed) << endl;
 	free(indicator);
 	free(unpredictable_data);
 	free(reg_params);

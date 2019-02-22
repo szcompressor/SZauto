@@ -28,6 +28,13 @@ write_array_to_dst(unsigned char *& dst, const T * array, size_t length){
 // modified from TypeManager.c
 // change return value and increment byteArray
 void 
-convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, size_t intArrayLength, unsigned char *& result);
+convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, size_t intArrayLength, unsigned char *& compressed_pos);
+
+// for test meta-compressor. sz implementation can remove this header.
+HuffmanTree *
+build_Huffman_tree(const int * type, size_t num_elements, size_t state_num);
+
+void
+Huffman_encode_tree_and_data(size_t state_num, const int * type, size_t num_elements, unsigned char*& compressed_pos);
 
 #endif

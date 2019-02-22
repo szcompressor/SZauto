@@ -1,7 +1,9 @@
 #include "sz_compression_utils.hpp"
 
+// modified from TypeManager.c
+// change return value and increment byteArray
 void 
-convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, size_t intArrayLength, unsigned char *& result){
+convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, size_t intArrayLength, unsigned char *& compressed_pos){
 	size_t byteLength = 0;
 	size_t i, j; 
 	if(intArrayLength%8==0)
@@ -19,6 +21,35 @@ convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, si
 				tmp = (tmp | (1 << (7-j)));
 			n++;
 		}
-    	*(result++) = (unsigned char)tmp;
+    	*(compressed_pos++) = (unsigned char)tmp;
 	}
 }
+
+HuffmanTree *
+build_Huffman_tree(size_t state_num, const int * type, size_t num_elements){
+	HuffmanTree * huffman = createHuffmanTree(state_num);
+	init(huffman, type, num_elements);
+	return huffman;
+}
+
+void
+Huffman_encode_tree_and_data(size_t state_num, const int * type, size_t num_elements, unsigned char*& compressed_pos){
+	HuffmanTree * huffman = build_Huffman_tree(state_num, type, num_elements);
+	size_t node_count = 0;
+	size_t i = 0;
+	for (i = 0; i < state_num; i++)
+		if (huffman->code[i]) node_count++; 
+	node_count = node_count*2-1;
+	unsigned char *tree_structure = NULL;
+	unsigned int tree_size = convert_HuffTree_to_bytes_anyStates(huffman, node_count, &tree_structure);
+	write_variable_to_dst(compressed_pos, node_count);
+	write_variable_to_dst(compressed_pos, tree_size);
+	write_array_to_dst(compressed_pos, tree_structure, tree_size);
+	size_t typeArray_size = 0;
+	encode(huffman, type, num_elements, compressed_pos, &typeArray_size);
+	compressed_pos += typeArray_size;
+	SZ_ReleaseHuffman(huffman);
+}
+
+
+

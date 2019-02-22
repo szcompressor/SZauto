@@ -110,7 +110,7 @@ prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_in
 }
 
 // perform block-independant decompression
-// TODO: fix temporary removal of const for compressed * (convertByteArray2IntArray_fast_1b)
+// TODO: add const to compressed and related functions (current Huffman is not const)
 template<typename T>
 T * 
 sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t r3){
@@ -132,7 +132,8 @@ sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t 
 	unsigned char * indicator = convertByteArray2IntArray_fast_1b_sz(size.num_blocks, compressed_pos, (size.num_blocks - 1)/8 + 1);
 	// unsigned char * indicator = read_array_from_src<unsigned char>(compressed_pos, size.num_blocks);
 	float * reg_params = read_array_from_src<float>(compressed_pos, RegCoeffNum3d*reg_count);
-	int * type = read_array_from_src<int>(compressed_pos, size.num_elements);
+	// int * type = read_array_from_src<int>(compressed_pos, size.num_elements);
+	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
 	prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params, indicator, type, unpredictable_data, dec_data);
 	free(indicator);

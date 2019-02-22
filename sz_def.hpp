@@ -7,7 +7,8 @@
 #include <cstdio>
 #include <cmath>
 #include <cstddef>
-// #include "sz.h"
+#include "sz.h"
+
 using namespace std;
 
 struct DSize_3d{

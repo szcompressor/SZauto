@@ -22,6 +22,9 @@ read_array_from_src(const unsigned char *& src, size_t length){
 // modified from TypeManager.c
 // change return value and increment byteArray
 unsigned char * 
-convertByteArray2IntArray_fast_1b_sz(size_t intArrayLength, const unsigned char*& byteArray, size_t byteArrayLength);
+convertByteArray2IntArray_fast_1b_sz(size_t intArrayLength, const unsigned char*& compressed_pos, size_t byteArrayLength);
+
+int *
+Huffman_decode_tree_and_data(size_t state_num, size_t num_elements, const unsigned char *& compressed_pos);
 
 #endif
