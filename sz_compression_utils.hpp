@@ -25,4 +25,9 @@ write_array_to_dst(unsigned char *& dst, const T * array, size_t length){
     dst += length*sizeof(T);
 }
 
+// modified from TypeManager.c
+// change return value and increment byteArray
+void 
+convertIntArray2ByteArray_fast_1b_to_result_sz(const unsigned char* intArray, size_t intArrayLength, unsigned char *& result);
+
 #endif

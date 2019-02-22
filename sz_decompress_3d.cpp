@@ -72,10 +72,10 @@ block_pred_and_decompress_lorenzo_3d(const meanInfo<T>& mean_info, T * buffer, i
 template<typename T>
 void
 prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
-	int intv_radius, const float * reg_params, const unsigned char * indictor, 
+	int intv_radius, const float * reg_params, const unsigned char * indicator, 
 	const int * type, const T * unpredictable_data_pos, T * dec_data){
 	const int * type_pos = type;
-	const unsigned char * indictor_pos = indictor;
+	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
@@ -88,7 +88,7 @@ prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_in
 				int size_x = ((i+1)*size.block_size < size.d1) ? size.block_size : size.d1 - i*size.block_size;
 				int size_y = ((j+1)*size.block_size < size.d2) ? size.block_size : size.d2 - j*size.block_size;
 				int size_z = ((k+1)*size.block_size < size.d3) ? size.block_size : size.d3 - k*size.block_size;
-				if(*indictor_pos){
+				if(*indicator_pos){
 					// regression
 					block_pred_and_decompress_regression_3d(reg_params_pos, precision, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos, z_data_pos);
@@ -99,7 +99,7 @@ prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_in
 					block_pred_and_decompress_lorenzo_3d(mean_info, pred_buffer, size.block_size+1, precision, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos, z_data_pos);
 				}
-				indictor_pos ++;
+				indicator_pos ++;
 				z_data_pos += size_x;
 			}
 			y_data_pos += size.block_size*size.dim1_offset;
@@ -110,25 +110,32 @@ prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_in
 }
 
 // perform block-independant decompression
+// TODO: fix temporary removal of const for compressed * (convertByteArray2IntArray_fast_1b)
 template<typename T>
 T * 
 sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t r3){
-	// TODO: change to real size
 	const unsigned char * compressed_pos = compressed;
-	int block_size = read_variable_from_src<int>(compressed_pos);
+	int block_size = 0;
+	read_variable_from_src<int>(compressed_pos, block_size);
 	DSize_3d size(r1, r2, r3, block_size);
-	double precision = read_variable_from_src<double>(compressed_pos);
-	int intv_radius = read_variable_from_src<int>(compressed_pos);
-	meanInfo<T> mean_info = read_variable_from_src<meanInfo<T> >(compressed_pos);
-	size_t reg_count = read_variable_from_src<size_t>(compressed_pos);
-	size_t unpredictable_count = read_variable_from_src<size_t>(compressed_pos);
+	double precision = 0;
+	read_variable_from_src<double>(compressed_pos, precision);
+	int intv_radius = 0;
+	read_variable_from_src(compressed_pos, intv_radius);
+	meanInfo<T> mean_info;
+	read_variable_from_src(compressed_pos, mean_info);
+	size_t reg_count = 0;
+	read_variable_from_src(compressed_pos, reg_count);
+	size_t unpredictable_count = 0;
+	read_variable_from_src(compressed_pos, unpredictable_count);
 	T * unpredictable_data = read_array_from_src<T>(compressed_pos, unpredictable_count);
-	unsigned char * indictor = read_array_from_src<unsigned char>(compressed_pos, size.num_blocks);
+	unsigned char * indicator = convertByteArray2IntArray_fast_1b_sz(size.num_blocks, compressed_pos, (size.num_blocks - 1)/8 + 1);
+	// unsigned char * indicator = read_array_from_src<unsigned char>(compressed_pos, size.num_blocks);
 	float * reg_params = read_array_from_src<float>(compressed_pos, RegCoeffNum3d*reg_count);
 	int * type = read_array_from_src<int>(compressed_pos, size.num_elements);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
-	prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params, indictor, type, unpredictable_data, dec_data);
-	free(indictor);
+	prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params, indicator, type, unpredictable_data, dec_data);
+	free(indicator);
 	free(unpredictable_data);
 	free(reg_params);
 	free(type);

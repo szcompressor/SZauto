@@ -152,10 +152,10 @@ block_pred_and_quant_lorenzo_3d(const meanInfo<T>& mean_info, const T * data_pos
 template<typename T>
 size_t
 prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
-	int capacity, int intv_radius, float * reg_params, unsigned char * indictor, int * type, T *& unpredictable_data_pos){
+	int capacity, int intv_radius, float * reg_params, unsigned char * indicator, int * type, T *& unpredictable_data_pos){
 	const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
-	unsigned char * indictor_pos = indictor;
+	unsigned char * indicator_pos = indicator;
 	float * reg_params_pos = reg_params;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
@@ -174,15 +174,15 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 				min_size = MIN(min_size, size_z);
 				// size of block is less than some threshold
 				if(min_size < RegThresholdSize3d){
-					*indictor_pos = 0;
+					*indicator_pos = 0;
 				}
 				else{
 					// cout << "compute_regression_coeffcients_3d\n";
 					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
 					// cout << "sz_blockwise_selection_3d\n";
-					*indictor_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
+					*indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
 				}
-				if(*indictor_pos){
+				if(*indicator_pos){
 					// regression
 					// cout << "block_pred_and_quant_regression_3d\n";
 					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, capacity, intv_radius, 
@@ -196,7 +196,7 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, size.block_size+1, precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
-				indictor_pos ++;
+				indicator_pos ++;
 				z_data_pos += size_x;
 			}
 			y_data_pos += size.block_size*size.dim1_offset;
@@ -369,10 +369,10 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	int intv_radius = (capacity >> 1);
 	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	T * unpredictable_data = (T *) malloc((0.05*size.num_elements) * sizeof(T));
-	unsigned char * indictor = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
+	unsigned char * indicator = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
 	float * reg_params = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
 	T * unpredictable_data_pos = unpredictable_data;
-	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, reg_params, indictor, type, unpredictable_data_pos);
+	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, reg_params, indicator, type, unpredictable_data_pos);
 	size_t unpredictable_count = unpredictable_data_pos - unpredictable_data;
 	cout << "Reg count = " << reg_count << ", Lorenzo count = " << size.num_blocks - reg_count << "\nUnpred count = " << (unpredictable_data_pos - unpredictable_data) << endl;
 	unsigned char * compressed = NULL;
@@ -386,10 +386,11 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	write_variable_to_dst(compressed_pos, reg_count);
 	write_variable_to_dst(compressed_pos, unpredictable_count);
 	write_array_to_dst(compressed_pos, unpredictable_data, unpredictable_count);
-	write_array_to_dst(compressed_pos, indictor, size.num_blocks);
+	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);;
+	// write_array_to_dst(compressed_pos, indicator, size.num_blocks);
 	write_array_to_dst(compressed_pos, reg_params, RegCoeffNum3d*reg_count);
 	write_array_to_dst(compressed_pos, type, size.num_elements);
-	free(indictor);
+	free(indicator);
 	free(unpredictable_data);
 	free(reg_params);
 	free(type);
