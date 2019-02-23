@@ -42,7 +42,7 @@ sz_block_error_estimation_3d(const T * data_pos, const float * reg_params_pos, c
 	const T * cur_data_pos = data_pos + x*dim0_offset + y*dim1_offset + z;
 	T cur_data = *cur_data_pos;
 	err_reg += fabs(cur_data - regression_predict_3d(reg_params_pos, x, y, z));
-	err_lorenzo += mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset))) : fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset) + noise);
+	err_lorenzo += mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset)) + noise) : fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset) + noise);
 }
 
 template<typename T>
