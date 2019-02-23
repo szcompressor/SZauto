@@ -41,8 +41,11 @@ Huffman_decode_tree_and_data(size_t state_num, size_t num_elements, const unsign
 	read_variable_from_src(compressed_pos, tree_size);
 	node root = reconstruct_HuffTree_from_bytes_anyStates(huffman, compressed_pos, node_count);
 	compressed_pos += tree_size;
+	size_t type_array_size = 0;
+	read_variable_from_src(compressed_pos, type_array_size);
 	int * type = (int *) malloc(num_elements * sizeof(int));
 	decode(compressed_pos, num_elements, root, type);
+	compressed_pos += type_array_size;
 	return type;
 }
 

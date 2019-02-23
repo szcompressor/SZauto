@@ -1,5 +1,5 @@
 #include "sz_compress_3d.hpp"
-
+#include "utils.hpp"
 template <typename T>
 inline void 
 compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, float * reg_params_pos){
@@ -61,24 +61,12 @@ sz_blockwise_selection_3d(const T * data_pos, const meanInfo<T>& mean_info, size
 }
 
 inline void
-compress_regression_coefficient_3d(){
-
-}
-
-// return quantization index, no decompression data (regression)
-template<typename T>
-inline int
-quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos){
-	double diff = cur_data - pred;
-	double quant_diff = fabs(diff) / precision + 1;
-	if(quant_diff < capacity){
-		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
-		int quant_index = (int)(quant_diff/2) + intv_radius;
-		T decompressed_data = pred + 2 * (quant_index - intv_radius) * precision; 
-		if(fabs(decompressed_data - cur_data) <= precision) return quant_index;
- 	}
- 	*(unpredictable_data_pos++) = cur_data;
- 	return 0;
+compress_regression_coefficient_3d(const double * precisions, float * reg_params_pos, int * reg_params_type_pos, float *& reg_unpredictable_data_pos){
+	float * prev_reg_params = reg_params_pos - RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d; i++){
+		*(reg_params_type_pos ++) = quantize(*prev_reg_params, *reg_params_pos, precisions[i], RegCoeffCapacity, RegCoeffRadius, reg_unpredictable_data_pos, reg_params_pos);
+		prev_reg_params ++, reg_params_pos ++; 
+	}
 }
 
 template<typename T>
@@ -97,24 +85,6 @@ block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_
 		}
 		cur_data_pos += dim0_offset - size_y * dim1_offset;
 	}
-}
-
-// quantize with decompression data (Lorenzo)
-template<typename T>
-inline int
-quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos, T * decompressed){
-	double diff = cur_data - pred;
-	double quant_diff = fabs(diff) / precision + 1;
-	if(quant_diff < capacity){
-		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
-		int quant_index = (int)(quant_diff/2) + intv_radius;
-		T decompressed_data = pred + 2 * (quant_index - intv_radius) * precision; 
-		*decompressed = decompressed_data;
-		if(fabs(decompressed_data - cur_data) <= precision) return quant_index;
- 	}
- 	*decompressed = cur_data;
- 	*(unpredictable_data_pos++) = cur_data;
- 	return 0;
 }
 
 // block-independant lorenzo pred & quant
@@ -152,11 +122,21 @@ block_pred_and_quant_lorenzo_3d(const meanInfo<T>& mean_info, const T * data_pos
 template<typename T>
 size_t
 prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
-	int capacity, int intv_radius, float * reg_params, unsigned char * indicator, int * type, T *& unpredictable_data_pos){
+	int capacity, int intv_radius, unsigned char * indicator, int * type, 
+	int * reg_params_type, float *& reg_unpredictable_data_pos, T *& unpredictable_data_pos){
 	const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
 	unsigned char * indicator_pos = indicator;
-	float * reg_params_pos = reg_params;
+	float * reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks+1) * sizeof(float));
+	for(int i=0; i<RegCoeffNum3d; i++)
+		reg_params[i] = 0;
+	float * reg_params_pos = reg_params + RegCoeffNum3d;
+	int * reg_params_type_pos = reg_params_type;
+	double reg_precisions[RegCoeffNum3d];
+	float rel_param_err = RegErrThreshold / RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d-1; i++) 
+		reg_precisions[i] = rel_param_err / size.block_size;
+	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	size_t reg_count = 0;
@@ -177,22 +157,20 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 					*indicator_pos = 0;
 				}
 				else{
-					// cout << "compute_regression_coeffcients_3d\n";
 					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
-					// cout << "sz_blockwise_selection_3d\n";
 					*indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
 				}
 				if(*indicator_pos){
 					// regression
-					// cout << "block_pred_and_quant_regression_3d\n";
+					compress_regression_coefficient_3d(reg_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
 					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, capacity, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
+					reg_params_type_pos += RegCoeffNum3d;
 				}
 				else{
 					// Lorenzo
-					// cout << "block_pred_and_quant_lorenzo_3d\n";
 					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, size.block_size+1, precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
@@ -203,7 +181,9 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 		}
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
+	cout << "reg_params_type_num = " << reg_params_type_pos - reg_params_type << endl;
 	free(pred_buffer);
+	free(reg_params);
 	return reg_count;
 }
 
@@ -358,6 +338,13 @@ optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double p
 	return meanInfo<T>(false, 0);
 }
 
+void
+encode_regression_coefficients(const int * reg_params_type, const float * reg_unpredictable_data, size_t reg_count, size_t reg_unpredictable_count, unsigned char *& compressed_pos){
+	write_variable_to_dst(compressed_pos, reg_unpredictable_count);
+	write_array_to_dst(compressed_pos, reg_unpredictable_data, reg_unpredictable_count);
+	Huffman_encode_tree_and_data(2*RegCoeffCapacity, reg_params_type, RegCoeffNum3d*reg_count, compressed_pos);
+}
+
 // perform block-independant compression
 template<typename T>
 unsigned char *
@@ -370,9 +357,11 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	T * unpredictable_data = (T *) malloc((0.05*size.num_elements) * sizeof(T));
 	unsigned char * indicator = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
-	float * reg_params = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
 	T * unpredictable_data_pos = unpredictable_data;
-	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, reg_params, indicator, type, unpredictable_data_pos);
+	int * reg_params_type = (int *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(int));
+	float * reg_unpredictable_data = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
+	float * reg_unpredictable_data_pos = reg_unpredictable_data;
+	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos);
 	size_t unpredictable_count = unpredictable_data_pos - unpredictable_data;
 	cout << "Reg count = " << reg_count << ", Lorenzo count = " << size.num_blocks - reg_count << "\nUnpred count = " << (unpredictable_data_pos - unpredictable_data) << endl;
 	unsigned char * compressed = NULL;
@@ -388,13 +377,16 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	write_array_to_dst(compressed_pos, unpredictable_data, unpredictable_count);
 	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);;
 	// write_array_to_dst(compressed_pos, indicator, size.num_blocks);
-	write_array_to_dst(compressed_pos, reg_params, RegCoeffNum3d*reg_count);
+	if(reg_count) encode_regression_coefficients(reg_params_type, reg_unpredictable_data, reg_count, reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
+	// write_array_to_dst(compressed_pos, reg_params, RegCoeffNum3d*reg_count);
 	// write_array_to_dst(compressed_pos, type, size.num_elements);
+	// writefile("type.dat", type, size.num_elements);
 	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 	cout << "Compressed size = " << compressed_pos - compressed << ", ratio = " << (size.num_elements*sizeof(T)) * 1.0/(compressed_pos - compressed) << endl;
 	free(indicator);
 	free(unpredictable_data);
-	free(reg_params);
+	free(reg_params_type);
+	free(reg_unpredictable_data);
 	free(type);
 	return compressed;
 }

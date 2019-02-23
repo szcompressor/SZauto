@@ -45,9 +45,13 @@ Huffman_encode_tree_and_data(size_t state_num, const int * type, size_t num_elem
 	write_variable_to_dst(compressed_pos, node_count);
 	write_variable_to_dst(compressed_pos, tree_size);
 	write_array_to_dst(compressed_pos, tree_structure, tree_size);
-	size_t typeArray_size = 0;
-	encode(huffman, type, num_elements, compressed_pos, &typeArray_size);
-	compressed_pos += typeArray_size;
+	unsigned char * type_array_size_pos = compressed_pos;
+	compressed_pos += sizeof(size_t);
+	size_t type_array_size = 0; 
+	encode(huffman, type, num_elements, compressed_pos, &type_array_size);
+	write_variable_to_dst(type_array_size_pos, type_array_size);
+	compressed_pos += type_array_size;
+	cout << "Huffman encoding size " << type_array_size << endl;
 	SZ_ReleaseHuffman(huffman);
 }
 

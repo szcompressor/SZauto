@@ -52,6 +52,9 @@ struct meanInfo{
 #define MIN(a, b) a<b?a:b
 
 #define RegCoeffNum3d 4
+#define RegErrThreshold 0.1
+#define RegCoeffRadius 32768
+#define RegCoeffCapacity 65536
 
 #endif
 
