@@ -1,5 +1,17 @@
 #include "sz_compression_utils.hpp"
 
+// copied from conf.c
+unsigned int 
+round_up_power_of_2(unsigned int base){
+  base -= 1;
+  base = base | (base >> 1);
+  base = base | (base >> 2);
+  base = base | (base >> 4);
+  base = base | (base >> 8);
+  base = base | (base >> 16);
+  return base + 1;
+} 
+
 // modified from TypeManager.c
 // change return value and increment byteArray
 void 

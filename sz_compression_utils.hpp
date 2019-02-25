@@ -59,6 +59,10 @@ quantize(float pred, T cur_data, double precision, int capacity, int intv_radius
  	return 0;
 }
 
+// copied from conf.c
+unsigned int 
+round_up_power_of_2(unsigned int base);
+
 // modified from TypeManager.c
 // change return value and increment byteArray
 void 

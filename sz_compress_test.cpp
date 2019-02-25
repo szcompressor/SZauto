@@ -18,7 +18,18 @@ int main(int argc, char ** argv){
     }
     cout << "value range = " << max - min << endl;
     cout << "precision = " << eb*(max - min) << endl;
-    unsigned char * result =  sz_compress_3d(data, r1, r2, r3, eb*(max - min));
+    size_t num_elements = r1 * r2 * r3;
+    size_t result_size = 0;
+    unsigned char * result =  sz_compress_3d(data, r1, r2, r3, eb*(max - min), result_size);
+    unsigned char * result_after_lossless = NULL;
+    cout << "Compressed size = " << result_size << ", ratio = " << (num_elements*sizeof(float)) * 1.0/result_size << endl;
+    SZ_Init(NULL);
+    size_t lossless_outsize = sz_lossless_compress(confparams_cpr->losslessCompressor, confparams_cpr->gzipMode, result, result_size, &result_after_lossless);
+    cout << "After lossless, compressed size = " << lossless_outsize << ", ratio = " << (num_elements*sizeof(float)) * 1.0/lossless_outsize << endl;
+    free(result);
+    size_t lossless_output = sz_lossless_decompress(confparams_cpr->losslessCompressor, result_after_lossless, lossless_outsize, &result, result_size);
+    free(result_after_lossless);
+    SZ_Finalize();
     float * dec_data = sz_decompress_3d<float>(result, r1, r2, r3);
     verify(data, dec_data, nbEle);
     free(result);

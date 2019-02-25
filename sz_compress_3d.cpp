@@ -215,18 +215,6 @@ sample_rough_mean(const T * data, size_t r1, size_t r2, size_t r3, size_t sample
 	return mean;
 }
 
-// copied from conf.c
-unsigned int 
-round_up_power_of_2(unsigned int base){
-  base -= 1;
-  base = base | (base >> 1);
-  base = base | (base >> 2);
-  base = base | (base >> 4);
-  base = base | (base >> 8);
-  base = base | (base >> 16);
-  return base + 1;
-} 
-
 unsigned int
 estimate_quantization_intervals(const vector<size_t>& intervals, size_t sample_count){
 	size_t target = sample_count * QuantIntvAccThreshold;
@@ -239,7 +227,7 @@ estimate_quantization_intervals(const vector<size_t>& intervals, size_t sample_c
 	}
 	if(i == intervals.size()) i = intervals.size()-1;
 	unsigned int accIntervals = 2*(i+1);
-	unsigned int num_intervals =  (i == intervals.size()) ? 2*intervals.size() : 2*round_up_power_of_2(i);
+	unsigned int num_intervals =  2*round_up_power_of_2(accIntervals);
 	return (num_intervals > 32) ? num_intervals : 32;
 }
 
@@ -348,7 +336,7 @@ encode_regression_coefficients(const int * reg_params_type, const float * reg_un
 // perform block-independant compression
 template<typename T>
 unsigned char *
-sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision){
+sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size){
 	DSize_3d size(r1, r2, r3, BSIZE3d);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
@@ -382,7 +370,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	// write_array_to_dst(compressed_pos, type, size.num_elements);
 	// writefile("type.dat", type, size.num_elements);
 	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
-	cout << "Compressed size = " << compressed_pos - compressed << ", ratio = " << (size.num_elements*sizeof(T)) * 1.0/(compressed_pos - compressed) << endl;
+	compressed_size = compressed_pos - compressed;
 	free(indicator);
 	free(unpredictable_data);
 	free(reg_params_type);
@@ -393,7 +381,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 
 template 
 unsigned char * 
-sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision);
+sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size);
 
 
 
