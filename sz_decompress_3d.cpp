@@ -75,7 +75,7 @@ prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_in
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos, z_data_pos);
 				}
 				indicator_pos ++;
-				z_data_pos += size_x;
+				z_data_pos += size_z;
 			}
 			y_data_pos += size.block_size*size.dim1_offset;
 		}
@@ -95,7 +95,7 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 	for(int i=0; i<RegCoeffNum3d; i++)
 		reg_params[i] = 0;
 	double reg_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold / RegCoeffNum3d;
+	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++)
 		reg_precisions[i] = rel_param_err / block_size;
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
@@ -112,7 +112,6 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 }
 
 // perform block-independant decompression
-// TODO: add const to compressed and related functions (current Huffman is not const)
 template<typename T>
 T * 
 sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t r3){
