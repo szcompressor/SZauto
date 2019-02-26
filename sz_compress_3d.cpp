@@ -215,7 +215,7 @@ sample_rough_mean(const T * data, size_t r1, size_t r2, size_t r3, size_t sample
 }
 
 unsigned int
-estimate_quantization_intervals(const vector<size_t>& intervals, size_t sample_count){
+estimate_quantization_intervals(const std::vector<size_t>& intervals, size_t sample_count){
 	size_t target = sample_count * QuantIntvAccThreshold;
 	size_t sum = 0;
 	size_t i = 0;
@@ -231,7 +231,7 @@ estimate_quantization_intervals(const vector<size_t>& intervals, size_t sample_c
 }
 
 float
-estimate_mean_freq_and_position(const vector<size_t>& freq_intervals, double precision, size_t sample_count, float& mean_guess){
+estimate_mean_freq_and_position(const std::vector<size_t>& freq_intervals, double precision, size_t sample_count, float& mean_guess){
 	size_t max_sum = 0;
 	size_t max_index = 0;
 	size_t tmp_sum = 0;
@@ -250,8 +250,8 @@ template<typename T>
 meanInfo<T>
 optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, int& capacity){
 	float mean_rough = sample_rough_mean(data, r1, r2, r3, sqrt(r1*r2*r3));
-	vector<size_t> intervals = vector<size_t>(QuantIntvSampleCapacity, 0);
-	vector<size_t> freq_intervals = vector<size_t>(QuantIntvMeanCapacity, 0);
+	std::vector<size_t> intervals = std::vector<size_t>(QuantIntvSampleCapacity, 0);
+	std::vector<size_t> freq_intervals = std::vector<size_t>(QuantIntvMeanCapacity, 0);
 	size_t freq_count = 0;
 	size_t sample_count = 0;
 	size_t sample_distance = QuantIntvSampleDistance;
@@ -339,7 +339,6 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	DSize_3d size(r1, r2, r3, BSIZE3d);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
-	cout << "Capacity = " << capacity << "\tmean = " << mean_info.use_mean << ", " << mean_info.mean << endl; 
 	int intv_radius = (capacity >> 1);
 	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	T * unpredictable_data = (T *) malloc((0.05*size.num_elements) * sizeof(T));
@@ -350,10 +349,10 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	float * reg_unpredictable_data_pos = reg_unpredictable_data;
 	size_t reg_count = prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos);
 	size_t unpredictable_count = unpredictable_data_pos - unpredictable_data;
-	cout << "Reg count = " << reg_count << ", Lorenzo count = " << size.num_blocks - reg_count << "\nUnpred count = " << (unpredictable_data_pos - unpredictable_data) << endl;
 	unsigned char * compressed = NULL;
-	// TODO: change to real size
-	compressed = (unsigned char *) malloc(size.num_elements*sizeof(T)*2);
+	// TODO: change to a better estimated size
+	size_t est_size = size.num_elements*sizeof(T)*1.2;
+	compressed = (unsigned char *) malloc(est_size);
 	unsigned char * compressed_pos = compressed;
 	write_variable_to_dst(compressed_pos, size.block_size);
 	write_variable_to_dst(compressed_pos, precision);
@@ -363,11 +362,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	write_variable_to_dst(compressed_pos, unpredictable_count);
 	write_array_to_dst(compressed_pos, unpredictable_data, unpredictable_count);
 	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);;
-	// write_array_to_dst(compressed_pos, indicator, size.num_blocks);
 	if(reg_count) encode_regression_coefficients(reg_params_type, reg_unpredictable_data, reg_count, reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
-	// write_array_to_dst(compressed_pos, reg_params, RegCoeffNum3d*reg_count);
-	// write_array_to_dst(compressed_pos, type, size.num_elements);
-	// writefile("type.dat", type, size.num_elements);
 	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 	compressed_size = compressed_pos - compressed;
 	free(indicator);

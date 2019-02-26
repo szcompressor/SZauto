@@ -125,7 +125,6 @@ sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t 
 	read_variable_from_src(compressed_pos, intv_radius);
 	meanInfo<T> mean_info;
 	read_variable_from_src(compressed_pos, mean_info);
-	cout << mean_info.use_mean << " " << mean_info.mean << endl;
 	size_t reg_count = 0;
 	read_variable_from_src(compressed_pos, reg_count);
 	size_t unpredictable_count = 0;
@@ -133,12 +132,9 @@ sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t 
 	const T * unpredictable_data = (const T *) compressed_pos;
 	compressed_pos += unpredictable_count * sizeof(float);
 	unsigned char * indicator = convertByteArray2IntArray_fast_1b_sz(size.num_blocks, compressed_pos, (size.num_blocks - 1)/8 + 1);
-	// unsigned char * indicator = read_array_from_src<unsigned char>(compressed_pos, size.num_blocks);
-	// float * reg_params = read_array_from_src<float>(compressed_pos, RegCoeffNum3d*reg_count);
 	float * reg_params = NULL;
 	if(reg_count) reg_params = decode_regression_coefficients(compressed_pos, reg_count, size.block_size, precision);
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
-	// int * type = read_array_from_src<int>(compressed_pos, size.num_elements);
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
 	prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpredictable_data, dec_data);

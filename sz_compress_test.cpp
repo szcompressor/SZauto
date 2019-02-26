@@ -1,24 +1,23 @@
 #include "sz_compress_3d.hpp"
 #include "sz_decompress_3d.hpp"
 #include "utils.hpp"
+using namespace std;
 
 int main(int argc, char ** argv){
-    int status;
-    size_t nbEle;
-    float * data = readfile<float>(argv[1], &nbEle);
+    size_t num_elements = 0;
+    float * data = readfile<float>(argv[1], num_elements);
     int r1 = atoi(argv[2]);
     int r2 = atoi(argv[3]);
     int r3 = atoi(argv[4]);
     double eb = atof(argv[5]);
     float max = data[0];
     float min = data[0];
-    for(int i=1; i<nbEle; i++){
+    for(int i=1; i<num_elements; i++){
         if(max < data[i]) max = data[i];
         if(min > data[i]) min = data[i];
     }
     cout << "value range = " << max - min << endl;
     cout << "precision = " << eb*(max - min) << endl;
-    size_t num_elements = r1 * r2 * r3;
     size_t result_size = 0;
     struct timespec start, end;
     int err = 0;
@@ -36,8 +35,8 @@ int main(int argc, char ** argv){
     err = clock_gettime(CLOCK_REALTIME, &end);
     cout << "Deompression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
     free(result_after_lossless);
-    // writefile("dec_data.dat", dec_data, nbEle);
-    verify(data, dec_data, nbEle);
+    // writefile("dec_data.dat", dec_data, num_elements);
+    verify(data, dec_data, num_elements);
     free(result);
     free(data);
     free(dec_data);

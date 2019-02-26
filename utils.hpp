@@ -10,7 +10,7 @@
 #include <ctime>
 
 template<typename Type>
-Type * readfile(char * file, size_t * num){
+Type * readfile(char * file, size_t& num){
 	std::ifstream fin(file, std::ios::binary);
 	if(!fin){
         std::cout << " Error, Couldn't find the file" << "\n";
@@ -22,12 +22,12 @@ Type * readfile(char * file, size_t * num){
     Type * data = (Type *) malloc(num_elements*sizeof(Type));
 	fin.read(reinterpret_cast<char*>(&data[0]), num_elements*sizeof(Type));
 	fin.close();
-	*num = num_elements;
+	num = num_elements;
 	return data;
 }
 
 template<typename Type>
-void readfile_to_buffer(char * file, size_t * num, Type * data){
+void readfile_to_buffer(char * file, size_t& num, Type * data){
     std::ifstream fin(file, std::ios::binary);
     if(!fin){
         std::cout << " Error, Couldn't find the file" << "\n";
@@ -38,7 +38,7 @@ void readfile_to_buffer(char * file, size_t * num, Type * data){
     fin.seekg(0, std::ios::beg);
     fin.read(reinterpret_cast<char*>(&data[0]), num_elements*sizeof(Type));
     fin.close();
-    *num = num_elements;
+    num = num_elements;
 }
 
 template<typename Type>
@@ -68,8 +68,7 @@ void verify(Type * ori_data, Type * data, size_t num_elements){
     double sum = 0, prodSum = 0, relerr = 0;
 
     double maxpw_relerr = 0; 
-    for (i = 0; i < num_elements; i++)
-    {
+    for (i = 0; i < num_elements; i++){
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
         
