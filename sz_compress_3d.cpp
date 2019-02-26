@@ -1,5 +1,5 @@
 #include "sz_compress_3d.hpp"
-#include "utils.hpp"
+
 template <typename T>
 inline void 
 compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, float * reg_params_pos){
@@ -181,7 +181,6 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 		}
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
-	cout << "reg_params_type_num = " << reg_params_type_pos - reg_params_type << endl;
 	free(pred_buffer);
 	free(reg_params);
 	return reg_count;

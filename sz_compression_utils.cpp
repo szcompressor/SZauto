@@ -63,7 +63,6 @@ Huffman_encode_tree_and_data(size_t state_num, const int * type, size_t num_elem
 	encode(huffman, type, num_elements, compressed_pos, &type_array_size);
 	write_variable_to_dst(type_array_size_pos, type_array_size);
 	compressed_pos += type_array_size;
-	cout << "Huffman encoding size " << type_array_size << endl;
 	SZ_ReleaseHuffman(huffman);
 }
 

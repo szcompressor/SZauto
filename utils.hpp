@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 
 template<typename Type>
 Type * readfile(char * file, size_t * num){
