@@ -41,7 +41,7 @@ inline void
 sz_block_error_estimation_3d(const T * data_pos, const float * reg_params_pos, const meanInfo<T>& mean_info, int x, int y, int z, size_t dim0_offset, size_t dim1_offset, float noise, double& err_reg, double& err_lorenzo){
 	const T * cur_data_pos = data_pos + x*dim0_offset + y*dim1_offset + z;
 	T cur_data = *cur_data_pos;
-	err_reg += fabs(cur_data - regression_predict_3d(reg_params_pos, x, y, z));
+	err_reg += fabs(cur_data - regression_predict_3d<T>(reg_params_pos, x, y, z));
 	err_lorenzo += mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset)) + noise) : fabs(cur_data - lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset)) + noise;
 }
 
@@ -77,7 +77,7 @@ block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
-				float pred = regression_predict_3d(reg_params_pos, i, j, k);
+				float pred = regression_predict_3d<T>(reg_params_pos, i, j, k);
 				*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos);
 				cur_data_pos ++;
 			}

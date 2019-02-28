@@ -1,7 +1,8 @@
 #ifndef _sz_prediction_h
 #define _sz_prediction_h
 
-inline float
+template<typename T>
+inline T
 regression_predict_3d(const float * reg_params_pos, int x, int y, int z){
 	return reg_params_pos[0] * x + reg_params_pos[1] * y + reg_params_pos[2] * z + reg_params_pos[3];
 }

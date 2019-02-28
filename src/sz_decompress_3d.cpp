@@ -9,7 +9,7 @@ block_pred_and_decompress_regression_3d(const float * reg_params_pos, double pre
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
-				float pred = regression_predict_3d(reg_params_pos, i, j, k);
+				float pred = regression_predict_3d<T>(reg_params_pos, i, j, k);
 				*(cur_data_pos++) = recover(pred, precision, *(type_pos++), intv_radius, unpredictable_data_pos);
 			}
 			cur_data_pos += dim1_offset - size_z;
