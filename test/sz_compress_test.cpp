@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
     size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, result_after_lossless, lossless_outsize, &result, result_size);
     float * dec_data = sz_decompress_3d<float>(result, r1, r2, r3);
     err = clock_gettime(CLOCK_REALTIME, &end);
-    cout << "Deompression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
+    cout << "Decompression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
     free(result_after_lossless);
     // writefile("dec_data.dat", dec_data, num_elements);
     verify(data, dec_data, num_elements);

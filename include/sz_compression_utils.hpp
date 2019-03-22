@@ -7,7 +7,6 @@
 #define QuantIntvSampleDistance 100
 #define QuantIntvSampleCapacity 32768
 #define QuantIntvAccThreshold 0.999
-#define BSIZE3d 8
 #define RegThresholdSize3d 4
 #define LorenzeNoise3d 1.22
 

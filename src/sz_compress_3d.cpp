@@ -335,7 +335,7 @@ encode_regression_coefficients(const int * reg_params_type, const float * reg_un
 // perform block-independant compression
 template<typename T>
 unsigned char *
-sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size){
+sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, int BSIZE3d){
 	DSize_3d size(r1, r2, r3, BSIZE3d);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
@@ -361,7 +361,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	write_variable_to_dst(compressed_pos, reg_count);
 	write_variable_to_dst(compressed_pos, unpredictable_count);
 	write_array_to_dst(compressed_pos, unpredictable_data, unpredictable_count);
-	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);;
+	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);
 	if(reg_count) encode_regression_coefficients(reg_params_type, reg_unpredictable_data, reg_count, reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
 	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 	compressed_size = compressed_pos - compressed;
@@ -375,7 +375,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 
 template 
 unsigned char * 
-sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size);
+sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, int BSIZE3d);
 
 
 
