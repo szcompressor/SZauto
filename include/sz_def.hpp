@@ -1,5 +1,5 @@
-#ifndef _sz_def_h
-#define _sz_def_h
+#ifndef _sz_def_hpp
+#define _sz_def_hpp
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstddef>
-#include "sz.h"
+#include "sz_huffman.hpp"
 
 using namespace std;
 
@@ -55,6 +55,5 @@ struct meanInfo{
 #define RegErrThreshold 0.1
 #define RegCoeffRadius 32768
 #define RegCoeffCapacity 65536
-
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef _sz_compress_3d_h
-#define _sz_compress_3d_h
+#ifndef _sz_compress_3d_hpp
+#define _sz_compress_3d_hpp
 
 #include "sz_compression_utils.hpp"
 #include "sz_def.hpp"

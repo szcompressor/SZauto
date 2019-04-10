@@ -1,5 +1,5 @@
-#ifndef _sz_decompression_utils_h
-#define _sz_decompression_utils_h
+#ifndef _sz_decompression_utils_hpp
+#define _sz_decompression_utils_hpp
 
 #include "sz_def.hpp"
 

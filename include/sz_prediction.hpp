@@ -1,5 +1,5 @@
-#ifndef _sz_prediction_h
-#define _sz_prediction_h
+#ifndef _sz_prediction_hpp
+#define _sz_prediction_hpp
 
 template<typename T>
 inline T

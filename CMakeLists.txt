@@ -7,9 +7,7 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_FLAGS "-O3")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-find_library (GZIP_LIBS zlib HINTS "/Users/xin/utils/sz/lib")
 find_library (ZSTD_LIBS zstd HINTS "/Users/xin/utils/sz/lib")
-find_library (SZ_LIBS SZ HINTS "/Users/xin/utils/sz_master/lib")
 add_subdirectory (src)
 add_subdirectory (test)
 
