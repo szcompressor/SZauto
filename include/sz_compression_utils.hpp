@@ -58,6 +58,18 @@ quantize(float pred, T cur_data, double precision, int capacity, int intv_radius
  	return 0;
 }
 
+inline void
+compress_regression_coefficient_3d(const double * precisions, float * reg_params_pos, int * reg_params_type_pos, float *& reg_unpredictable_data_pos){
+	float * prev_reg_params = reg_params_pos - RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d; i++){
+		*(reg_params_type_pos ++) = quantize(*prev_reg_params, *reg_params_pos, precisions[i], RegCoeffCapacity, RegCoeffRadius, reg_unpredictable_data_pos, reg_params_pos);
+		prev_reg_params ++, reg_params_pos ++; 
+	}
+}
+
+void
+encode_regression_coefficients(const int * reg_params_type, const float * reg_unpredictable_data, size_t reg_count, size_t reg_unpredictable_count, unsigned char *& compressed_pos);
+
 // copied from conf.c
 unsigned int 
 round_up_power_of_2(unsigned int base);

@@ -1,11 +1,11 @@
 add_library (sz_cpp SHARED 
-	sz_compress_3d.cpp
 	sz_compression_utils.cpp
-	sz_decompress_3d.cpp
+	sz_compress_3d.cpp
 	sz_decompression_utils.cpp
+	sz_decompress_3d.cpp
 	sz_huffman.cpp
 	sz_lossless.cpp)
-target_include_directories(sz_cpp PRIVATE "/Users/xin/utils/sz/include")
+target_include_directories(sz_cpp PRIVATE ${ZSTD_INCLUDES})
 target_include_directories(sz_cpp PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(sz_cpp ${ZSTD_LIBS})
 file(GLOB header_files ${PROJECT_SOURCE_DIR}/include/*.hpp)
