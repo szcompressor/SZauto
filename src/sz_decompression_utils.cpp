@@ -24,6 +24,7 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 			prev_reg_params ++, reg_params_pos ++;
 		}
 	}
+	free(reg_type);
 	return reg_params;
 }
 
@@ -74,6 +75,7 @@ Huffman_decode_tree_and_data(size_t state_num, size_t num_elements, const unsign
 	int * type = (int *) malloc(num_elements * sizeof(int));
 	decode(compressed_pos, num_elements, root, type);
 	compressed_pos += type_array_size;
+	SZ_ReleaseHuffman(huffman);
 	return type;
 }
 
