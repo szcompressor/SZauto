@@ -43,6 +43,7 @@ block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_
 	}
 }
 
+// block-dependant lorenzo pred & quant
 template<typename T>
 inline void
 block_pred_and_quant_regression_3d_with_buffer(const T * data_pos, const float * reg_params_pos, T * buffer, double precision, int capacity, 

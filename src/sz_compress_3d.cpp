@@ -7,6 +7,7 @@
 #include "sz_regression_utils.hpp"
 
 // return regression count
+// use block-independant lorenzo pred & quant
 template<typename T>
 size_t
 prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
@@ -77,6 +78,7 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 }
 
 // return regression count
+// use block-dependant lorenzo pred & quant
 template<typename T>
 size_t
 prediction_and_quantization_3d_with_border_prediction(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
@@ -152,10 +154,11 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 	return reg_count;
 }
 
-// perform block-independant compression
+// perform compression
 template<typename T>
 unsigned char *
 sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, int BSIZE3d, bool block_independant){
+	// block_independant = false;
 	DSize_3d size(r1, r2, r3, BSIZE3d);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
@@ -167,8 +170,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	int * reg_params_type = (int *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(int));
 	float * reg_unpredictable_data = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
 	float * reg_unpredictable_data_pos = reg_unpredictable_data;
-	size_t reg_count = 0;
-	reg_count = block_independant? prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos)
+	size_t reg_count = block_independant? prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos)
 			: prediction_and_quantization_3d_with_border_prediction(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos);
 	size_t unpredictable_count = unpredictable_data_pos - unpredictable_data;
 	unsigned char * compressed = NULL;
@@ -178,6 +180,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	unsigned char * compressed_pos = compressed;
 	write_variable_to_dst(compressed_pos, size.block_size);
 	write_variable_to_dst(compressed_pos, precision);
+	write_variable_to_dst(compressed_pos, (char) block_independant);
 	write_variable_to_dst(compressed_pos, intv_radius);
 	write_variable_to_dst(compressed_pos, mean_info);
 	write_variable_to_dst(compressed_pos, reg_count);

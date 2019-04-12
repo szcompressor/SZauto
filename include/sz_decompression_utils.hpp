@@ -44,6 +44,9 @@ recover(const meanInfo<T>& mean_info, float pred, double precision, int type_val
 	}
 }
 
+float *
+decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg_count, int block_size, double precision);
+
 // modified from TypeManager.c
 // change return value and increment byteArray
 unsigned char * 
