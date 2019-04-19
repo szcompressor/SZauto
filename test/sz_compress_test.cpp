@@ -23,7 +23,7 @@ int main(int argc, char ** argv){
     struct timespec start, end;
     int err = 0;
     err = clock_gettime(CLOCK_REALTIME, &start);
-    unsigned char * result =  sz_compress_3d_knl(data, r1, r2, r3, eb*(max - min), result_size);
+    unsigned char * result =  sz_compress_3d_knl(data, r1, r2, r3, eb*(max - min), result_size, 8, false);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
     err = clock_gettime(CLOCK_REALTIME, &end);

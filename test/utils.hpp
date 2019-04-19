@@ -82,10 +82,6 @@ void verify(Type * ori_data, Type * data, size_t num_elements){
 
         if (diffMax < err)
             diffMax = err;
-        if(diffMax > 82284){
-            cout << i << " " << ori_data[i] << " " << data[i] << endl;
-            exit(0);
-        }
         prodSum += (ori_data[i]-mean1)*(data[i]-mean2);
         sum3 += (ori_data[i] - mean1)*(ori_data[i]-mean1);
         sum4 += (data[i] - mean2)*(data[i]-mean2);
