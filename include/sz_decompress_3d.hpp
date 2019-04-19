@@ -10,4 +10,8 @@ template<typename T>
 T *
 sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t r3);
 
+template<typename T>
+T *
+sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, size_t r3);
+
 #endif

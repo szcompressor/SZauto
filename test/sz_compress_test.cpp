@@ -23,7 +23,7 @@ int main(int argc, char ** argv){
     struct timespec start, end;
     int err = 0;
     err = clock_gettime(CLOCK_REALTIME, &start);
-    unsigned char * result =  sz_compress_3d(data, r1, r2, r3, eb*(max - min), result_size);
+    unsigned char * result =  sz_compress_3d_knl(data, r1, r2, r3, eb*(max - min), result_size);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
     err = clock_gettime(CLOCK_REALTIME, &end);
@@ -32,7 +32,7 @@ int main(int argc, char ** argv){
     free(result);
     err = clock_gettime(CLOCK_REALTIME, &start);
     size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, result_after_lossless, lossless_outsize, &result, result_size);
-    float * dec_data = sz_decompress_3d<float>(result, r1, r2, r3);
+    float * dec_data = sz_decompress_3d_knl<float>(result, r1, r2, r3);
     err = clock_gettime(CLOCK_REALTIME, &end);
     cout << "Decompression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
     free(result_after_lossless);
