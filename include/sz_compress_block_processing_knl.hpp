@@ -24,8 +24,8 @@ block_pred_and_quant_regression_3d_knl(const T * data_pos, const float * reg_par
 						half_index = - half_index;
 					}
 					type_pos[j*size_z + k] = half_index + intv_radius;
-					double decompressed_data = (double)pred + (double)quant_index * precision;
-					if(fabs((double)cur_data - decompressed_data) > precision){
+					T decompressed_data = (T) ((double)pred + (double)quant_index * precision);
+					if(fabs(cur_data - decompressed_data) > precision){
 						int index = j*size_z + k;
 						type_pos[index] = 0;
 						unpred_buffer[index*offset + unpred_count_buffer[index]] = cur_data;
@@ -67,14 +67,14 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
 						half_index = - half_index;
 					}
 					type_pos[j*size_z + k] = half_index + intv_radius;
-					double decompressed_data = (double)pred + (double)quant_index * precision;
-					if(fabs((double)cur_data - decompressed_data) > precision){
+					T decompressed_data = (T) ((double)pred + (double)quant_index * precision);
+					if(fabs(cur_data - decompressed_data) > precision){
 						int index = j*size_z + k;
 						type_pos[index] = 0;
 						unpred_buffer[index*offset + unpred_count_buffer[index]] = buffer_pos[j*buffer_dim1_offset + k] = cur_data;
 						unpred_count_buffer[index] ++;
 					}
-					else buffer_pos[j*buffer_dim1_offset + k] = (T) decompressed_data;
+					else buffer_pos[j*buffer_dim1_offset + k] = decompressed_data;
 			 	}
 			 	else{
 					int index = j*size_z + k;
@@ -119,14 +119,14 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 							half_index = - half_index;
 						}
 						type_pos[k] = half_index + intv_radius;
-						double decompressed_data = (double)pred + (double)quant_index * precision;
-						if(fabs((double)cur_data - decompressed_data) > precision){
+						T decompressed_data = (T)((double)pred + (double)quant_index * precision);
+						if(fabs(cur_data - decompressed_data) > precision){
 							int index = j*size_z + k;
 							unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
 							unpred_count_buffer[index] ++;
 							type_pos[k] = 0;
 						}
-					 	else *cur_buffer_pos = (T) decompressed_data;
+					 	else *cur_buffer_pos = decompressed_data;
 				 	}
 				 	else{
 						int index = j*size_z + k;
