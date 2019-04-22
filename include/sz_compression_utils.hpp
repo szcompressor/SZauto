@@ -27,9 +27,9 @@ write_array_to_dst(unsigned char *& dst, const T * array, size_t length){
 // quantize with decompression data (Lorenzo)
 template<typename T>
 inline int
-quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos, T * decompressed){
+quantize(float pred, T cur_data, double precision, double recip_precision, int capacity, int intv_radius, T *& unpredictable_data_pos, T * decompressed){
 	double diff = cur_data - pred;
-	double quant_diff = fabs(diff) / precision + 1;
+	double quant_diff = fabs(diff) * recip_precision + 1;
 	if(quant_diff < capacity){
 		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
 		int quant_index = (int)(quant_diff/2) + intv_radius;
@@ -45,9 +45,9 @@ quantize(float pred, T cur_data, double precision, int capacity, int intv_radius
 // return quantization index, no decompression data (regression)
 template<typename T>
 inline int
-quantize(float pred, T cur_data, double precision, int capacity, int intv_radius, T *& unpredictable_data_pos){
+quantize(float pred, T cur_data, double precision, double recip_precision, int capacity, int intv_radius, T *& unpredictable_data_pos){
 	double diff = cur_data - pred;
-	double quant_diff = fabs(diff) / precision + 1;
+	double quant_diff = fabs(diff) * recip_precision + 1;
 	if(quant_diff < capacity){
 		quant_diff = (diff > 0) ? quant_diff : -quant_diff;
 		int quant_index = (int)(quant_diff/2) + intv_radius;
@@ -59,10 +59,10 @@ quantize(float pred, T cur_data, double precision, int capacity, int intv_radius
 }
 
 inline void
-compress_regression_coefficient_3d(const double * precisions, float * reg_params_pos, int * reg_params_type_pos, float *& reg_unpredictable_data_pos){
+compress_regression_coefficient_3d(const double * precisions, const double * recip_precisions, float * reg_params_pos, int * reg_params_type_pos, float *& reg_unpredictable_data_pos){
 	float * prev_reg_params = reg_params_pos - RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d; i++){
-		*(reg_params_type_pos ++) = quantize(*prev_reg_params, *reg_params_pos, precisions[i], RegCoeffCapacity, RegCoeffRadius, reg_unpredictable_data_pos, reg_params_pos);
+		*(reg_params_type_pos ++) = quantize(*prev_reg_params, *reg_params_pos, precisions[i], recip_precisions[i], RegCoeffCapacity, RegCoeffRadius, reg_unpredictable_data_pos, reg_params_pos);
 		prev_reg_params ++, reg_params_pos ++; 
 	}
 }

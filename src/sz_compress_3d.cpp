@@ -23,16 +23,21 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
 	double reg_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
-	for(int i=0; i<RegCoeffNum3d-1; i++) 
+	double reg_recip_precisions[RegCoeffNum3d];
+	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
+		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
+	}
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
+	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 	size_t buffer_dim0_offset = (size.block_size + 1) * (size.block_size + 1);
 	size_t buffer_dim1_offset = size.block_size + 1;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
+	double recip_precision = 1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -54,8 +59,8 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 				}
 				if(*indicator_pos){
 					// regression
-					compress_regression_coefficient_3d(reg_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, capacity, intv_radius, 
+					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
+					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -63,7 +68,7 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, precision, capacity_lorenzo, intv_radius, 
+					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
 				indicator_pos ++;
@@ -94,10 +99,14 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
 	double reg_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
-	for(int i=0; i<RegCoeffNum3d-1; i++) 
+	double reg_recip_precisions[RegCoeffNum3d];
+	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
+		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
+	}
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
+	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 	// maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
 	size_t buffer_dim0_offset = (size.d2+1)*(size.d3+1);
 	size_t buffer_dim1_offset = size.d3+1;
@@ -105,6 +114,7 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
+	double recip_precision = 1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -127,8 +137,8 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 				}
 				if(*indicator_pos){
 					// regression
-					compress_regression_coefficient_3d(reg_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_with_buffer(z_data_pos, reg_params_pos, pred_buffer_pos, precision, capacity, intv_radius, 
+					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
+					block_pred_and_quant_regression_3d_with_buffer(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -136,7 +146,7 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer_pos, precision, capacity_lorenzo, intv_radius, 
+					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
 				pred_buffer_pos += size.block_size;
@@ -172,16 +182,21 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
 	double reg_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
-	for(int i=0; i<RegCoeffNum3d-1; i++) 
+	double reg_recip_precisions[RegCoeffNum3d];
+	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
+		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
+	}
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
+	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 	size_t buffer_dim0_offset = (size.block_size + 1) * (size.block_size + 1);
 	size_t buffer_dim1_offset = size.block_size + 1;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
+	double recip_precision = 1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -204,8 +219,8 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 				}
 				if(*indicator_pos){
 					// regression
-					compress_regression_coefficient_3d(reg_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_knl(z_data_pos, reg_params_pos, precision, capacity, intv_radius, 
+					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
+					block_pred_and_quant_regression_3d_knl(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -213,7 +228,7 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer, precision, capacity_lorenzo, intv_radius, 
+					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 				}
 				indicator_pos ++;
@@ -242,10 +257,14 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
 	double reg_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
-	for(int i=0; i<RegCoeffNum3d-1; i++) 
+	double reg_recip_precisions[RegCoeffNum3d];
+	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
+		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
+	}
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
+	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 	// maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
 	size_t buffer_dim0_offset = (size.d2+1)*(size.d3+1);
 	size_t buffer_dim1_offset = size.d3+1;
@@ -253,6 +272,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
+	double recip_precision = 1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -275,8 +295,8 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				}
 				if(*indicator_pos){
 					// regression
-					compress_regression_coefficient_3d(reg_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision, capacity, intv_radius, 
+					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
+					block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -284,7 +304,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer_pos, precision, capacity_lorenzo, intv_radius, 
+					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 				}
 				pred_buffer_pos += size.block_size;

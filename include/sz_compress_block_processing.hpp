@@ -27,14 +27,14 @@ sz_blockwise_selection_3d(const T * data_pos, const meanInfo<T>& mean_info, size
 
 template<typename T>
 inline void
-block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_pos, double precision, int capacity, 
+block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_pos, double precision, double recip_precision, int capacity, 
 	int intv_radius, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){
 	const T * cur_data_pos = data_pos;
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
 				float pred = regression_predict_3d<T>(reg_params_pos, i, j, k);
-				*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos);
+				*(type_pos++) = quantize(pred, *cur_data_pos, precision, recip_precision, capacity, intv_radius, unpredictable_data_pos);
 				cur_data_pos ++;
 			}
 			cur_data_pos += dim1_offset - size_z;
@@ -46,7 +46,7 @@ block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_
 // block-dependant lorenzo pred & quant
 template<typename T>
 inline void
-block_pred_and_quant_regression_3d_with_buffer(const T * data_pos, const float * reg_params_pos, T * buffer, double precision, int capacity, 
+block_pred_and_quant_regression_3d_with_buffer(const T * data_pos, const float * reg_params_pos, T * buffer, double precision, double recip_precision, int capacity, 
 	int intv_radius, int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){
 	const T * cur_data_pos = data_pos;
@@ -56,7 +56,7 @@ block_pred_and_quant_regression_3d_with_buffer(const T * data_pos, const float *
 			T * cur_buffer_pos = buffer_pos;
 			for(int k=0; k<size_z; k++){
 				float pred = regression_predict_3d<T>(reg_params_pos, i, j, k);
-				*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos, cur_buffer_pos);
+				*(type_pos++) = quantize(pred, *cur_data_pos, precision, recip_precision, capacity, intv_radius, unpredictable_data_pos, cur_buffer_pos);
 				cur_data_pos ++;
 				cur_buffer_pos ++;
 			}
@@ -71,7 +71,7 @@ block_pred_and_quant_regression_3d_with_buffer(const T * data_pos, const float *
 // block-independant lorenzo pred & quant
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, double precision, int capacity, int intv_radius, 
+block_pred_and_quant_lorenzo_3d(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, double precision, double recip_precision, int capacity, int intv_radius, 
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){
 	const T * cur_data_pos = data_pos;
@@ -86,7 +86,7 @@ block_pred_and_quant_lorenzo_3d(const meanInfo<T>& mean_info, const T * data_pos
 				}
 				else{
 					float pred = lorenzo_predict_3d(cur_buffer_pos, buffer_dim0_offset, buffer_dim1_offset);
-					*(type_pos++) = quantize(pred, *cur_data_pos, precision, capacity, intv_radius, unpredictable_data_pos, cur_buffer_pos);
+					*(type_pos++) = quantize(pred, *cur_data_pos, precision, recip_precision, capacity, intv_radius, unpredictable_data_pos, cur_buffer_pos);
 				}
 				cur_data_pos ++;
 				cur_buffer_pos ++;
