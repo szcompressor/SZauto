@@ -63,16 +63,19 @@ block_pred_and_decompress_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, T
 			T * cur_data_pos = dec_data_pos + i*dim0_offset + j*dim1_offset;
 			T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + (j+1)*buffer_dim1_offset + 1;
 			for(int k=0; k<size_z; k++){
-				T * cur_buffer_pos = buffer_pos + k;
-				T pred = cur_buffer_pos[-buffer_dim0_offset] + cur_buffer_pos[-buffer_dim1_offset] - cur_buffer_pos[- buffer_dim0_offset - buffer_dim1_offset];
 				int index = j*size_z + k;
 				int type_val = type_pos[index];
-				if(type_val == 0){
-					cur_data_pos[k] = *cur_buffer_pos = unpred_data_buffer[index*offset + unpred_count_buffer[index]];
-					unpred_count_buffer[index] ++;
-				}
+				if((mean_info.use_mean) && (type_val == 1)) cur_data_pos[k] = buffer_pos[k] = mean_info.mean;
 				else{
-					cur_data_pos[k] = *cur_buffer_pos = (T) ((double)pred + (double)(2 * (type_val - intv_radius)) * precision);
+					T * cur_buffer_pos = buffer_pos + k;
+					T pred = cur_buffer_pos[-buffer_dim0_offset] + cur_buffer_pos[-buffer_dim1_offset] - cur_buffer_pos[- buffer_dim0_offset - buffer_dim1_offset];
+					if(type_val == 0){
+						cur_data_pos[k] = *cur_buffer_pos = unpred_data_buffer[index*offset + unpred_count_buffer[index]];
+						unpred_count_buffer[index] ++;
+					}
+					else{				
+						cur_data_pos[k] = *cur_buffer_pos = (T) ((double)pred + (double)(2 * (type_val - intv_radius)) * precision);
+					}
 				}
 			}
 		}

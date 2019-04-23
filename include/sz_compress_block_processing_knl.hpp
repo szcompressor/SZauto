@@ -99,7 +99,7 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 			const T * cur_data_pos = data_pos + i*dim0_offset + j*dim1_offset;
 			T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + (j+1)*buffer_dim1_offset + 1;
 			for(int k=0; k<size_z; k++){
-				if(mean_info.use_mean && (fabs(*cur_data_pos - mean_info.mean) < precision)){
+				if(mean_info.use_mean && (fabs(cur_data_pos[k] - mean_info.mean) < precision)){
 					type_pos[k] = 1;
 					buffer_pos[k] = mean_info.mean;
 				}
