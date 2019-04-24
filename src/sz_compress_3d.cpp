@@ -181,9 +181,9 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 		reg_params[i] = 0;
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
-	float reg_precisions[RegCoeffNum3d];
-	float reg_recip_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	T reg_precisions[RegCoeffNum3d];
+	T reg_recip_precisions[RegCoeffNum3d];
+	T rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
 		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
@@ -256,9 +256,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 		reg_params[i] = 0;
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
-	float reg_precisions[RegCoeffNum3d];
-	float reg_recip_precisions[RegCoeffNum3d];
-	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	T reg_precisions[RegCoeffNum3d];
+	T reg_recip_precisions[RegCoeffNum3d];
+	T rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
 		reg_recip_precisions[i] = 1.0 / reg_precisions[i];

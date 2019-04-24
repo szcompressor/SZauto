@@ -255,11 +255,11 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	memset(unpred_count_buffer, 0, size.block_size * size.block_size * sizeof(int));
 	unsigned char * indicator = convertByteArray2IntArray_fast_1b_sz(size.num_blocks, compressed_pos, (size.num_blocks - 1)/8 + 1);
 	float * reg_params = NULL;
-	if(reg_count) reg_params = decode_regression_coefficients(compressed_pos, reg_count, size.block_size, precision);
+	T precision_t = (T) precision;
+	if(reg_count) reg_params = decode_regression_coefficients(compressed_pos, reg_count, size.block_size, precision_t);
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
-	T precision_t = (T) precision;
 	block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data) :
 		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data);
 	free(unpred_count_buffer);
