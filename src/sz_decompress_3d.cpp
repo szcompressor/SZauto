@@ -94,7 +94,7 @@ prediction_and_decompression_3d_with_border_prediction(const DSize_3d& size, con
 
 template<typename T>
 void
-prediction_and_decompression_3d_with_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
+prediction_and_decompression_3d_with_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
 	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data){
 	const int * type_pos = type;
@@ -137,7 +137,7 @@ prediction_and_decompression_3d_with_knl_optimization(const DSize_3d& size, cons
 // use block-dependant lorenzo pred & quant
 template<typename T>
 void
-prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
+prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
 	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data){
 	const int * type_pos = type;
@@ -259,8 +259,9 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
-	block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data) :
-		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data);
+	T precision_t = (T) precision;
+	block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data) :
+		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data);
 	free(unpred_count_buffer);
 	free(unpred_data_buffer);
 	free(indicator);

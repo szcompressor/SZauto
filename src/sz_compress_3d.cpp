@@ -170,7 +170,7 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 // use block-independant lorenzo pred & quant
 template<typename T>
 size_t
-prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
+prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int capacity, int intv_radius, unsigned char * indicator, int * type, 
 	int * reg_params_type, float *& reg_unpredictable_data_pos, int * unpred_count_buffer, T * unpred_data_buffer, size_t offset){
 	const float noise = precision * LorenzeNoise3d;
@@ -181,9 +181,9 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 		reg_params[i] = 0;
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
-	double reg_precisions[RegCoeffNum3d];
-	double reg_recip_precisions[RegCoeffNum3d];
-	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	float reg_precisions[RegCoeffNum3d];
+	float reg_recip_precisions[RegCoeffNum3d];
+	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
 		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
@@ -196,7 +196,7 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 	memset(pred_buffer, 0, (size.block_size+1)*(size.block_size+1)*(size.block_size+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
-	double recip_precision = 1.0 / precision;
+	T recip_precision = (T)1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -245,7 +245,7 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 
 template<typename T>
 size_t
-prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
+prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int capacity, int intv_radius, unsigned char * indicator, int * type, 
 	int * reg_params_type, float *& reg_unpredictable_data_pos, int * unpred_count_buffer, T * unpred_data_buffer, size_t offset){
 	const float noise = precision * LorenzeNoise3d;
@@ -256,9 +256,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 		reg_params[i] = 0;
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	int * reg_params_type_pos = reg_params_type;
-	double reg_precisions[RegCoeffNum3d];
-	double reg_recip_precisions[RegCoeffNum3d];
-	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	float reg_precisions[RegCoeffNum3d];
+	float reg_recip_precisions[RegCoeffNum3d];
+	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++){
 		reg_precisions[i] = rel_param_err / size.block_size;
 		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
@@ -272,7 +272,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
-	double recip_precision = 1.0 / precision;
+	T recip_precision = (T)1.0 / precision;
 	const T * x_data_pos = data;
 	for(size_t i=0; i<size.num_x; i++){
 		const T * y_data_pos = x_data_pos;
@@ -390,8 +390,10 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 	int * unpred_count_buffer = (int *) malloc(size.block_size * size.block_size * sizeof(int));
 	memset(unpred_count_buffer, 0, size.block_size * size.block_size * sizeof(int));
 	// predict and quant on KNL
-	size_t reg_count = block_independant ? prediction_and_quantization_3d_with_knl_optimization(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index) :
-		prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index);
+	T precision_t = (T) precision;
+	cout << "New precision = " << precision_t << endl;
+	size_t reg_count = block_independant ? prediction_and_quantization_3d_with_knl_optimization(data, size, mean_info, precision_t, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index) :
+		prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(data, size, mean_info, precision_t, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index);
 	unsigned char * compressed = NULL;
 	// TODO: change to a better estimated size
 	size_t est_size = size.num_elements*sizeof(T)*1.2;

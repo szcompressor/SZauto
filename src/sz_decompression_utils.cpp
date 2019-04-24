@@ -1,7 +1,7 @@
 #include "sz_decompression_utils.hpp"
 
 float *
-decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg_count, int block_size, double precision){
+decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg_count, int block_size, float precision){
 	size_t reg_unpredictable_count = 0;
 	read_variable_from_src(compressed_pos, reg_unpredictable_count);
 	const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
@@ -10,8 +10,8 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 	float * reg_params = (float *) malloc(RegCoeffNum3d*(reg_count + 1)*sizeof(float));
 	for(int i=0; i<RegCoeffNum3d; i++)
 		reg_params[i] = 0;
-	double reg_precisions[RegCoeffNum3d];
-	double rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
+	float reg_precisions[RegCoeffNum3d];
+	float rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++)
 		reg_precisions[i] = rel_param_err / block_size;
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
