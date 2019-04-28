@@ -28,7 +28,7 @@ int main(int argc, char ** argv){
     auto *compress_func1 = sz_compress_3d<float>;
     auto *compress_func2 = sz_compress_3d_knl<float>;
     auto *compress_func = use_knl ? compress_func2 : compress_func1;
-    unsigned char * result =  compress_func(data, r1, r2, r3, eb*(max - min), result_size, block_size, false);
+    unsigned char * result =  compress_func(data, r1, r2, r3, eb*(max - min), result_size, block_size, false, false);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
     err = clock_gettime(CLOCK_REALTIME, &end);

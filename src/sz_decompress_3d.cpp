@@ -165,7 +165,7 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 				}
 				else{
 					// Lorenzo
-					block_pred_and_decompress_lorenzo_3d_knl_2d_pred(mean_info, pred_buffer_pos, precision, intv_radius, size_x, size_y, size_z, 
+					block_pred_and_decompress_lorenzo_3d_knl_3d_pred(mean_info, pred_buffer_pos, precision, intv_radius, size_x, size_y, size_z, 
 							buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos);
 				}
 				pred_buffer_pos += size.block_size;
