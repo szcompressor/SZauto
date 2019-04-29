@@ -11,6 +11,16 @@
 
 using namespace std;
 
+struct sz_params{
+	bool block_independant;
+	bool all_lorenzo;
+	int block_size;
+	int prediction_dim;
+	int increase_quant_intv;
+	sz_params(bool bi=false, bool al=false, int bs=6, int pd=3, int iqi=0): block_independant(bi), all_lorenzo(al), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi){}
+};
+const sz_params default_params(false, false, 6, 3, 0);
+
 struct DSize_3d{
 	size_t d1;
 	size_t d2;

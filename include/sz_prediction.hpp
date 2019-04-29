@@ -9,6 +9,18 @@ regression_predict_3d(const float * reg_params_pos, int x, int y, int z){
 
 template<typename T>
 inline T
+lorenzo_predict_1d(const T * data_pos, size_t dim0_offset){
+	return data_pos[-dim0_offset];
+}
+
+template<typename T>
+inline T
+lorenzo_predict_2d(const T * data_pos, size_t dim0_offset, size_t dim1_offset){
+	return data_pos[-dim0_offset] + data_pos[-dim1_offset] + data_pos[-dim0_offset - dim1_offset];
+}
+
+template<typename T>
+inline T
 lorenzo_predict_3d(const T * data_pos, size_t dim0_offset, size_t dim1_offset){
 	return data_pos[-1] + data_pos[-dim1_offset] + data_pos[-dim0_offset] 
 	- data_pos[-dim1_offset - 1] - data_pos[-dim0_offset - 1] 

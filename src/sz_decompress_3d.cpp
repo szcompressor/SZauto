@@ -7,7 +7,7 @@ template<typename T>
 void
 prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
-	const int * type, const T * unpredictable_data_pos, T * dec_data){
+	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& params){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -50,7 +50,7 @@ template<typename T>
 void
 prediction_and_decompression_3d_with_border_prediction(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
-	const int * type, const T * unpredictable_data_pos, T * dec_data){
+	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& params){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -96,7 +96,7 @@ template<typename T>
 void
 prediction_and_decompression_3d_with_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
-	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data){
+	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data, const sz_params& params){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -139,7 +139,7 @@ template<typename T>
 void
 prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator, 
-	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data){
+	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data, const sz_params& params){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -147,6 +147,9 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 	size_t buffer_dim1_offset = size.d3+1;
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
+	auto *lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_3d_pred<T>;
+	if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
+	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
 	T * x_data_pos = dec_data;
 	for(size_t i=0; i<size.num_x; i++){
 		T * y_data_pos = x_data_pos;
@@ -165,7 +168,7 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 				}
 				else{
 					// Lorenzo
-					block_pred_and_decompress_lorenzo_3d_knl_3d_pred(mean_info, pred_buffer_pos, precision, intv_radius, size_x, size_y, size_z, 
+					lorenzo_pred_and_decomp(mean_info, pred_buffer_pos, precision, intv_radius, size_x, size_y, size_z, 
 							buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos);
 				}
 				pred_buffer_pos += size.block_size;
@@ -186,13 +189,11 @@ template<typename T>
 T * 
 sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t r3){
 	const unsigned char * compressed_pos = compressed;
-	int block_size = 0;
-	read_variable_from_src<int>(compressed_pos, block_size);
-	DSize_3d size(r1, r2, r3, block_size);
+	sz_params params;
+	read_variable_from_src(compressed_pos, params);
+	DSize_3d size(r1, r2, r3, params.block_size);
 	double precision = 0;
 	read_variable_from_src(compressed_pos, precision);
-	char block_independant = 0;
-	read_variable_from_src(compressed_pos, block_independant);
 	int intv_radius = 0;
 	read_variable_from_src(compressed_pos, intv_radius);
 	meanInfo<T> mean_info;
@@ -209,8 +210,8 @@ sz_decompress_3d(const unsigned char * compressed, size_t r1, size_t r2, size_t 
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
-	block_independant ? prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpredictable_data, dec_data)
-		: prediction_and_decompression_3d_with_border_prediction(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpredictable_data, dec_data);
+	params.block_independant ? prediction_and_decompression_3d(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpredictable_data, dec_data, params)
+		: prediction_and_decompression_3d_with_border_prediction(size, mean_info, precision, intv_radius, reg_params_pos, indicator, type, unpredictable_data, dec_data, params);
 	free(indicator);
 	free(reg_params);
 	free(type);
@@ -226,13 +227,11 @@ template<typename T>
 T * 
 sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, size_t r3){
 	const unsigned char * compressed_pos = compressed;
-	int block_size = 0;
-	read_variable_from_src<int>(compressed_pos, block_size);
-	DSize_3d size(r1, r2, r3, block_size);
+	sz_params params;
+	read_variable_from_src(compressed_pos, params);
+	DSize_3d size(r1, r2, r3, params.block_size);
 	double precision = 0;
 	read_variable_from_src(compressed_pos, precision);
-	char block_independant = 0;
-	read_variable_from_src(compressed_pos, block_independant);
 	int intv_radius = 0;
 	read_variable_from_src(compressed_pos, intv_radius);
 	meanInfo<T> mean_info;
@@ -241,7 +240,7 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	read_variable_from_src(compressed_pos, reg_count);
 	// prepare unpred buffer for vectorization
 	int est_unpred_count_per_index = size.num_blocks * size.block_size * 1;
-	if(!block_independant) est_unpred_count_per_index /= 20;
+	if(!params.block_independant) est_unpred_count_per_index /= 20;
 	int * unpred_count_buffer = read_array_from_src<int>(compressed_pos, size.block_size * size.block_size);
 	T * unpred_data_buffer = (T *) malloc(size.block_size * size.block_size * est_unpred_count_per_index * sizeof(T));
 	T * unpred_data_buffer_pos = unpred_data_buffer;
@@ -260,8 +259,8 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
-	block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data) :
-		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data);
+	params.block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data, params) :
+		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data, params);
 	free(unpred_count_buffer);
 	free(unpred_data_buffer);
 	free(indicator);
