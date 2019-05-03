@@ -273,7 +273,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
 	auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred<T>;
-	if(params.prediction_dim == 1) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_1d_pred<T>;
+	if(params.prediction_dim == 2) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_2d_pred<T>;
 	else if(params.prediction_dim == 1) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_1d_pred<T>;
 	T recip_precision = (T)1.0 / precision;
 	const T * x_data_pos = data;
@@ -395,7 +395,7 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 	float * reg_unpredictable_data_pos = reg_unpredictable_data;
 	// prepare unpred buffer for vectorization
 	int est_unpred_count_per_index = size.num_blocks * size.block_size * 1;
-	if(!params.block_independant) est_unpred_count_per_index /= 20;
+	// if(!params.block_independant) est_unpred_count_per_index /= 20;
 	T * unpred_data_buffer = (T *) malloc(size.block_size * size.block_size * est_unpred_count_per_index * sizeof(T));
 	int * unpred_count_buffer = (int *) malloc(size.block_size * size.block_size * sizeof(int));
 	memset(unpred_count_buffer, 0, size.block_size * size.block_size * sizeof(int));

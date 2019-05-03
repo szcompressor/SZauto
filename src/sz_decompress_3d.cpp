@@ -148,8 +148,8 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
 	auto *lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_3d_pred<T>;
-	if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
-	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
+	if(params.prediction_dim == 2) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
+	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
 	T * x_data_pos = dec_data;
 	for(size_t i=0; i<size.num_x; i++){
 		T * y_data_pos = x_data_pos;
@@ -240,7 +240,7 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	read_variable_from_src(compressed_pos, reg_count);
 	// prepare unpred buffer for vectorization
 	int est_unpred_count_per_index = size.num_blocks * size.block_size * 1;
-	if(!params.block_independant) est_unpred_count_per_index /= 20;
+	// if(!params.block_independant) est_unpred_count_per_index /= 20;
 	int * unpred_count_buffer = read_array_from_src<int>(compressed_pos, size.block_size * size.block_size);
 	T * unpred_data_buffer = (T *) malloc(size.block_size * size.block_size * est_unpred_count_per_index * sizeof(T));
 	T * unpred_data_buffer_pos = unpred_data_buffer;
