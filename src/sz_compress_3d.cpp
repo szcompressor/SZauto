@@ -7,6 +7,11 @@
 #include "sz_optimize_quant_intervals.hpp"
 #include "sz_regression_utils.hpp"
 
+// avoid mistake when running on KNL 
+// need to be checked later;
+// also in sz_decompress_block_processing_knl.hpp
+float * ori_data_sp_float = NULL;
+
 // return regression count
 // use block-independant lorenzo pred & quant
 template<typename T>
@@ -380,6 +385,7 @@ sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, doubl
 template<typename T>
 unsigned char *
 sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params){
+	ori_data_sp_float = (float *) data;
 	DSize_3d size(r1, r2, r3, params.block_size);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);

@@ -1,6 +1,10 @@
 #ifndef _sz_compress_block_processing_knl_hpp
 #define _sz_compress_block_processing_knl_hpp
 
+// avoid mistake when running on KNL
+// need to be checked later;
+extern float * ori_data_sp_float;
+
 // optimizations on knl
 template<typename T>
 inline void
@@ -180,6 +184,10 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 							type_pos[k] = 0;
 						}
 					 	else *cur_buffer_pos = decompressed_data;
+						if(cur_data_pos + k - ori_data_sp_float == -1){
+							printf("compress index out of bound, data=%.4f, diff=%.4f, dec_data=%.4f, type=%d, quant_radius=%d, pred=%.4f\n", cur_data, fabs(cur_data - decompressed_data), decompressed_data, type_pos[k], intv_radius, pred);
+							exit(0);
+						}
 				 	}
 				 	else{
 						int index = j*size_z + k;
@@ -237,6 +245,10 @@ block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const 
 							type_pos[k] = 0;
 						}
 					 	else *cur_buffer_pos = decompressed_data;
+						if(cur_data_pos + k - ori_data_sp_float == -1){
+							printf("compress index out of bound, data=%.4f, diff=%.4f, dec_data=%.4f, type=%d, quant_radius=%d, pred=%.4f\n", cur_data, fabs(cur_data - decompressed_data), decompressed_data, type_pos[k], intv_radius, pred);
+							exit(0);
+						}
 				 	}
 				 	else{
 						int index = j*size_z + k;
