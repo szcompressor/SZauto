@@ -149,17 +149,15 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	const T * cur_data_pos = data_pos;
+	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
-			const T * cur_data_pos = data_pos + i*dim0_offset + j*dim1_offset;
-			T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + (j+1)*buffer_dim1_offset + 1;
 			for(int k=0; k<size_z; k++){
 				if(mean_info.use_mean && (fabs(cur_data_pos[k] - mean_info.mean) < precision)){
 					type_pos[k] = 1;
 					buffer_pos[k] = mean_info.mean;
 				}
 				else{
-					// reduce to 2D prediction
 					T * cur_buffer_pos = buffer_pos + k;
 					T cur_data = cur_data_pos[k];
 					T pred = cur_buffer_pos[-buffer_dim0_offset] + cur_buffer_pos[-buffer_dim1_offset] - cur_buffer_pos[- buffer_dim0_offset - buffer_dim1_offset];
@@ -192,7 +190,11 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 				}
 			}
 			type_pos += size_z;
+			buffer_pos += buffer_dim1_offset;
+			cur_data_pos += dim1_offset;
 		}
+		buffer_pos += buffer_dim0_offset - size_y*buffer_dim1_offset;
+		cur_data_pos += dim0_offset - size_y * dim1_offset;
 	}
 }
 

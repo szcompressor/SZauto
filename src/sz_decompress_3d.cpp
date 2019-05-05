@@ -2,6 +2,11 @@
 #include "sz_decompress_block_processing.hpp"
 #include "sz_decompress_block_processing_knl.hpp"
 
+// avoid mistake when running on KNL 
+// need to be checked later;
+// also in sz_decompress_block_processing_knl.hpp
+float * dec_data_sp_float = NULL;
+
 // use block-independant lorenzo pred & quant
 template<typename T>
 void
@@ -259,6 +264,7 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	const float * reg_params_pos = reg_count? (const float *) (reg_params + RegCoeffNum3d) : NULL; 
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);
 	T * dec_data = (T *) malloc(size.num_elements*sizeof(T));
+	dec_data_sp_float = (float *) dec_data;
 	params.block_independant ? prediction_and_decompression_3d_with_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data, params) :
 		prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(size, mean_info, precision_t, intv_radius, reg_params_pos, indicator, type, unpred_count_buffer, unpred_data_buffer, est_unpred_count_per_index, dec_data, params);
 	free(unpred_count_buffer);
