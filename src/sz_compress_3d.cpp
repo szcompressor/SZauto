@@ -6,7 +6,8 @@
 #include "sz_compress_block_processing_knl.hpp"
 #include "sz_optimize_quant_intervals.hpp"
 #include "sz_regression_utils.hpp"
-// avoid mistake when running on KNL
+
+// avoid mistake when running on KNL 
 // need to be checked later;
 // also in sz_decompress_block_processing_knl.hpp
 float * ori_data_sp_float = NULL;
@@ -16,7 +17,7 @@ float * ori_data_sp_float = NULL;
 template<typename T>
 size_t
 prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
-	int capacity, int intv_radius, unsigned char * indicator, int * type,
+	int capacity, int intv_radius, unsigned char * indicator, int * type, 
 	int * reg_params_type, float *& reg_unpredictable_data_pos, T *& unpredictable_data_pos){
 	const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
@@ -64,7 +65,7 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 				if(*indicator_pos){
 					// regression
 					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius,
+					block_pred_and_quant_regression_3d(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -72,7 +73,7 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius,
+					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
 				indicator_pos ++;
@@ -92,8 +93,8 @@ prediction_and_quantization_3d(const T * data, const DSize_3d& size, const meanI
 template<typename T>
 size_t
 prediction_and_quantization_3d_with_border_prediction(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
-	int capacity, int intv_radius, unsigned char * indicator, int * type,
-	int * reg_params_type, float *& reg_unpredictable_data_pos, T *& unpredictable_data_pos, const sz_params& params){
+	int capacity, int intv_radius, unsigned char * indicator, int * type, 
+	int * reg_params_type, float *& reg_unpredictable_data_pos, T *& unpredictable_data_pos){
 	const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
 	unsigned char * indicator_pos = indicator;
@@ -132,23 +133,17 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 				int min_size = MIN(size_x, size_y);
 				min_size = MIN(min_size, size_z);
 				// size of block is less than some threshold
-				if(params.all_lorenzo || min_size < RegThresholdSize3d){
+				if(min_size < RegThresholdSize3d){
 					*indicator_pos = 0;
 				}
 				else{
 					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
-
-                    if (params.all_regression){
-                        *indicator_pos = 1;
-                    }else {
-                        *indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
-                                                                   min_size, noise, reg_params_pos);
-                    }
+					*indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
 				}
 				if(*indicator_pos){
 					// regression
 					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_with_buffer(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius,
+					block_pred_and_quant_regression_3d_with_buffer(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -156,7 +151,7 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius,
+					block_pred_and_quant_lorenzo_3d(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpredictable_data_pos);
 				}
 				pred_buffer_pos += size.block_size;
@@ -181,7 +176,7 @@ prediction_and_quantization_3d_with_border_prediction(const T * data, const DSiz
 template<typename T>
 size_t
 prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
-	int capacity, int intv_radius, unsigned char * indicator, int * type,
+	int capacity, int intv_radius, unsigned char * indicator, int * type, 
 	int * reg_params_type, float *& reg_unpredictable_data_pos, int * unpred_count_buffer, T * unpred_data_buffer, size_t offset, const sz_params& params){
 	const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
@@ -225,13 +220,12 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 				else{
 					// opt if necessary
 					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
-                    *indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
-                                                               min_size, noise, reg_params_pos);
+					*indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
 				}
 				if(*indicator_pos){
 					// regression
 					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_knl(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius,
+					block_pred_and_quant_regression_3d_knl(z_data_pos, reg_params_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -239,7 +233,7 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 				}
 				else{
 					// Lorenzo
-					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius,
+					block_pred_and_quant_lorenzo_3d_knl_2d_pred(mean_info, z_data_pos, pred_buffer, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 				}
 				indicator_pos ++;
@@ -257,10 +251,9 @@ prediction_and_quantization_3d_with_knl_optimization(const T * data, const DSize
 template<typename T>
 size_t
 prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(const T * data, const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
-	int capacity, int intv_radius, unsigned char * indicator, int * type, int * reg_params_type, float *& reg_unpredictable_data_pos,
+	int capacity, int intv_radius, unsigned char * indicator, int * type, int * reg_params_type, float *& reg_unpredictable_data_pos, 
 	int * unpred_count_buffer, T * unpred_data_buffer, size_t offset, const sz_params& params){
 	const float noise = precision * LorenzeNoise3d;
-//	const float noise = 0.0;
 	int * type_pos = type;
 	unsigned char * indicator_pos = indicator;
 	float * reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks+1) * sizeof(float));
@@ -277,13 +270,8 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	}
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
 	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
-	for( int i=0;i<RegCoeffNum3d;i++){
-	    cout<<reg_precisions[i]<<" ";
-	}
-	cout<<endl;
-
-
 	// maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
+	// 2-layer lorenzo
 	size_t buffer_dim0_offset = (size.d2+2)*(size.d3+2);
 	size_t buffer_dim1_offset = size.d3+2;
 	T * pred_buffer = (T *) malloc((size.block_size+2)*(size.d2+2)*(size.d3+2)*sizeof(T));
@@ -307,23 +295,17 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				int min_size = MIN(size_x, size_y);
 				min_size = MIN(min_size, size_z);
 				// size of block is less than some threshold
-//				if(params.all_lorenzo || (min_size < RegThresholdSize3d)){
-				if(params.all_lorenzo ){
+				if(params.all_lorenzo || (min_size < RegThresholdSize3d)){
 					*indicator_pos = 0;
 				}
 				else{
 					compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset, reg_params_pos);
-                    if (params.all_regression){
-                        *indicator_pos = 1;
-                    }else {
-                        *indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
-                                                                   min_size, noise, reg_params_pos);
-                    }
+					*indicator_pos = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset, min_size, noise, reg_params_pos);
 				}
 				if(*indicator_pos){
 					// regression
 					compress_regression_coefficient_3d(reg_precisions, reg_recip_precisions, reg_params_pos, reg_params_type_pos, reg_unpredictable_data_pos);
-					block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius,
+					block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision, recip_precision, capacity, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 					reg_count ++;
 					reg_params_pos += RegCoeffNum3d;
@@ -331,7 +313,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				}
 				else{
 					// Lorenzo
-					lorenzo_pred_and_quant(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius,
+					lorenzo_pred_and_quant(mean_info, z_data_pos, pred_buffer_pos, precision, recip_precision, capacity_lorenzo, intv_radius, 
 						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset);
 				}
 				pred_buffer_pos += size.block_size;
@@ -343,7 +325,6 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 		}
 		// copy bottom of buffer to top of buffer
 		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, 2*buffer_dim0_offset*sizeof(T));
-//		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, buffer_dim0_offset*sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
 	free(pred_buffer);
@@ -363,7 +344,6 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 		else capacity >>= -params.increase_quant_intv;
 	}
 	int intv_radius = (capacity >> 1);
-	cout<< "capacity"<<capacity<<endl;
 	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	T * unpredictable_data = (T *) malloc((0.05*size.num_elements) * sizeof(T));
 	unsigned char * indicator = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
@@ -372,7 +352,7 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	float * reg_unpredictable_data = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
 	float * reg_unpredictable_data_pos = reg_unpredictable_data;
 	size_t reg_count = params.block_independant? prediction_and_quantization_3d(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos)
-			: prediction_and_quantization_3d_with_border_prediction(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos, params);
+			: prediction_and_quantization_3d_with_border_prediction(data, size, mean_info, precision, capacity, intv_radius, indicator, type, reg_params_type, reg_unpredictable_data_pos, unpredictable_data_pos);
 	size_t unpredictable_count = unpredictable_data_pos - unpredictable_data;
 	unsigned char * compressed = NULL;
 	// TODO: change to a better estimated size
@@ -398,8 +378,8 @@ sz_compress_3d(const T * data, size_t r1, size_t r2, size_t r3, double precision
 	return compressed;
 }
 
-template
-unsigned char *
+template 
+unsigned char * 
 sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params);
 
 // perform compression
@@ -414,10 +394,8 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 		if(params.increase_quant_intv > 0) capacity <<= params.increase_quant_intv;
 		else capacity >>= -params.increase_quant_intv;
 	}
-	capacity=65535;
 	int intv_radius = (capacity >> 1);
-    cout<< "capacity: "<<capacity<<endl;
-    int * type = (int *) malloc(size.num_elements * sizeof(int));
+	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	unsigned char * indicator = (unsigned char *) malloc(size.num_blocks * sizeof(unsigned char));
 	int * reg_params_type = (int *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(int));
 	float * reg_unpredictable_data = (float *) malloc(RegCoeffNum3d * size.num_blocks * sizeof(float));
@@ -453,26 +431,8 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 	free(unpred_data_buffer);
 	free(unpred_count_buffer);
 	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);
-
-	unsigned char* previous_pos=compressed_pos;
-	if(reg_count){
-	    encode_regression_coefficients(reg_params_type, reg_unpredictable_data, reg_count, reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
-	    cout<<"Regression Param size after Huffman: "<< compressed_pos-previous_pos<<endl;
-	}
-	previous_pos=compressed_pos;
-
-//    std::ofstream fout("/Users/kzhao/Documents/Workspace/data/test/bins", std::ios::binary);
-//    fout.write(reinterpret_cast<const char*>(&type[0]),size.num_elements*sizeof(float));
-//    fout.close();
-//    system("/Users/kzhao/Documents/Workspace/meta_compressor/build/bin/sz_test2  /Users/kzhao/Documents/Workspace/data/test/bins 800000");
-//
-//    system("/Users/kzhao/Documents/Workspace/LFZip/src/libbsc/bsc e /Users/kzhao/Documents/Workspace/data/test/bins /Users/kzhao/Documents/Workspace/data/test/bins_out -b64p -e2");
-
-
-    Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
-    cout<<"Data size after Huffman: "<< compressed_pos-previous_pos<<endl;
-    cout << "Total size after Huffman: " << compressed_pos - compressed << endl;
-
+	if(reg_count) encode_regression_coefficients(reg_params_type, reg_unpredictable_data, reg_count, reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
+	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 	compressed_size = compressed_pos - compressed;
 	free(indicator);
 	free(reg_params_type);
@@ -481,8 +441,8 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 	return compressed;
 }
 
-template
-unsigned char *
+template 
+unsigned char * 
 sz_compress_3d_knl<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params);
 
 
