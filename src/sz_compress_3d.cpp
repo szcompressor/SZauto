@@ -271,10 +271,11 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
 	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 	// maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
-	size_t buffer_dim0_offset = (size.d2+1)*(size.d3+1);
-	size_t buffer_dim1_offset = size.d3+1;
-	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
-	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
+	// 2-layer lorenzo
+	size_t buffer_dim0_offset = (size.d2+2)*(size.d3+2);
+	size_t buffer_dim1_offset = size.d3+2;
+	T * pred_buffer = (T *) malloc((size.block_size+2)*(size.d2+2)*(size.d3+2)*sizeof(T));
+	memset(pred_buffer, 0, (size.block_size+2)*(size.d2+2)*(size.d3+2)*sizeof(T));
 	size_t reg_count = 0;
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
 	auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred<T>;
@@ -323,7 +324,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 			pred_buffer_pos += size.block_size*buffer_dim1_offset - size.block_size*size.num_z;
 		}
 		// copy bottom of buffer to top of buffer
-		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, buffer_dim0_offset*sizeof(T));
+		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, 2*buffer_dim0_offset*sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
 	free(pred_buffer);

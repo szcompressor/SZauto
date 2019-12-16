@@ -55,7 +55,8 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	for(int i=0; i<size_x; i++){
 		const T * cur_data_pos = data_pos + i*dim0_offset;
-		T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
+		// T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
+		T * buffer_pos = buffer + (i+2)*buffer_dim0_offset + 2*buffer_dim1_offset + 2;
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
 				T cur_data = cur_data_pos[j*dim1_offset + k];
@@ -212,7 +213,7 @@ block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const 
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	const T * cur_data_pos = data_pos;
-	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
+	T * buffer_pos = buffer + 2*(buffer_dim0_offset + buffer_dim1_offset + 1);
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
