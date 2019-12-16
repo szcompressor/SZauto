@@ -148,10 +148,11 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
-	size_t buffer_dim0_offset = (size.d2+1)*(size.d3+1);
-	size_t buffer_dim1_offset = size.d3+1;
-	T * pred_buffer = (T *) malloc((size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
-	memset(pred_buffer, 0, (size.block_size+1)*(size.d2+1)*(size.d3+1)*sizeof(T));
+	// add one more ghost layer
+	size_t buffer_dim0_offset = (size.d2+2)*(size.d3+2);
+	size_t buffer_dim1_offset = size.d3+2;
+	T * pred_buffer = (T *) malloc((size.block_size+2)*(size.d2+2)*(size.d3+2)*sizeof(T));
+	memset(pred_buffer, 0, (size.block_size+2)*(size.d2+2)*(size.d3+2)*sizeof(T));
 	auto *lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_3d_pred<T>;
 	if(params.prediction_dim == 2) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
 	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
@@ -183,7 +184,7 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 			y_data_pos += size.block_size*size.dim1_offset;
 			pred_buffer_pos += size.block_size*buffer_dim1_offset - size.block_size*size.num_z;
 		}
-		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, buffer_dim0_offset*sizeof(T));
+		memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, 2*buffer_dim0_offset*sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
 	free(pred_buffer);
