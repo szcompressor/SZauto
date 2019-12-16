@@ -14,12 +14,15 @@ using namespace std;
 struct sz_params{
 	bool block_independant;
 	bool all_lorenzo;
+	bool all_regression;
 	int block_size;
 	int prediction_dim;
 	int increase_quant_intv;
-	sz_params(bool bi=false, bool al=false, int bs=6, int pd=3, int iqi=0): block_independant(bi), all_lorenzo(al), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi){}
+	int lorenzo_layer;
+	int regression_layer;
+	sz_params(bool bi=false, bool al=false, bool ar=false, int bs=6, int pd=3, int iqi=0): block_independant(bi), all_lorenzo(al), all_regression(ar), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi){}
 };
-const sz_params default_params(false, false, 6, 3, 0);
+const sz_params default_params(false, false, false,6, 3, 0);
 
 struct DSize_3d{
 	size_t d1;

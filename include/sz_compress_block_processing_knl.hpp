@@ -8,8 +8,8 @@ extern float * ori_data_sp_float;
 // optimizations on knl
 template<typename T>
 inline void
-block_pred_and_quant_regression_3d_knl(const T * data_pos, const float * reg_params_pos, T precision, T recip_precision, int capacity, 
-	int intv_radius, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, 
+block_pred_and_quant_regression_3d_knl(const T * data_pos, const float * reg_params_pos, T precision, T recip_precision, int capacity,
+	int intv_radius, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset,
 	int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	for(int i=0; i<size_x; i++){
 		const T * cur_data_pos = data_pos + i*dim0_offset;
@@ -50,12 +50,13 @@ block_pred_and_quant_regression_3d_knl(const T * data_pos, const float * reg_par
 
 template<typename T>
 inline void
-block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const float * reg_params_pos, T * buffer, T precision, T recip_precision, int capacity, 
+block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const float * reg_params_pos, T * buffer, T precision, T recip_precision, int capacity,
 	int intv_radius, int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	for(int i=0; i<size_x; i++){
 		const T * cur_data_pos = data_pos + i*dim0_offset;
-		T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
+//		T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
+		T * buffer_pos = buffer + (i+2)*buffer_dim0_offset + (buffer_dim1_offset + 1)*2;
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
 				T cur_data = cur_data_pos[j*dim1_offset + k];
@@ -94,7 +95,7 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
 
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius, 
+block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	const T * cur_data_pos = data_pos;
@@ -149,7 +150,7 @@ block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const 
 
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius, 
+block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	const T * cur_data_pos = data_pos;
@@ -206,13 +207,15 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 	}
 }
 
+//TODO kai add lorenzo
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius, 
+block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
 	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset){
 	const T * cur_data_pos = data_pos;
-	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
+	T * buffer_pos = buffer + (buffer_dim0_offset + buffer_dim1_offset + 1)*2;
+//	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
@@ -223,8 +226,8 @@ block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const 
 				else{
 					T * cur_buffer_pos = buffer_pos + k;
 					T cur_data = cur_data_pos[k];
-					T pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim1_offset] + cur_buffer_pos[-buffer_dim0_offset] 
-							- cur_buffer_pos[-buffer_dim1_offset - 1] - cur_buffer_pos[-buffer_dim0_offset - 1] 
+					T pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim1_offset] + cur_buffer_pos[-buffer_dim0_offset]
+							- cur_buffer_pos[-buffer_dim1_offset - 1] - cur_buffer_pos[-buffer_dim0_offset - 1]
 							- cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset] + cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset - 1];
 					T diff = cur_data - pred;
 					int quant_index = (int)(fabs(diff) * recip_precision) + 1;

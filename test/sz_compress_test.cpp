@@ -16,6 +16,7 @@ int main(int argc, char ** argv){
     int pred_dim = atoi(argv[8]);
     int all_lorenzo = atoi(argv[9]);
     int increase_quant_intv = atoi(argv[10]);
+    int all_regression = atoi(argv[11]);
     float max = data[0];
     float min = data[0];
     for(int i=1; i<num_elements; i++){
@@ -23,7 +24,8 @@ int main(int argc, char ** argv){
         if(min > data[i]) min = data[i];
     }
     cout << "Options" << endl;
-    cout << "use_knl = " << use_knl << ", block_size = " << block_size << ", pred_dim = " << pred_dim << ", all_lorenzo = " << all_lorenzo << endl;
+    cout << "use_knl = " << use_knl << ", block_size = " << block_size << ", pred_dim = " << pred_dim << ", all_lorenzo = "
+         << all_lorenzo << ", all_regression= " << all_regression << endl;
     cout << "change_quant_intv_size = " << increase_quant_intv << endl;
     cout << endl;
     cout << "value range = " << max - min << endl;
@@ -35,7 +37,7 @@ int main(int argc, char ** argv){
     auto *compress_func1 = sz_compress_3d<float>;
     auto *compress_func2 = sz_compress_3d_knl<float>;
     auto *compress_func = use_knl ? compress_func2 : compress_func1;
-    sz_params params(false, all_lorenzo, block_size, pred_dim, increase_quant_intv);
+    sz_params params(false, all_lorenzo, all_regression, block_size, pred_dim, increase_quant_intv);
     unsigned char * result =  compress_func(data, r1, r2, r3, eb*(max - min), result_size, params);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
