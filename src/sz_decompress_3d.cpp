@@ -157,10 +157,10 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 	const float * reg_params_pos = reg_params;
 	const float * reg_poly_params_pos = reg_poly_params;
 	// add one more ghost layer
-    size_t buffer_dim0_offset = (size.d2 + 2) * (size.d3 + 2);
-    size_t buffer_dim1_offset = size.d3 + 2;
-    T *pred_buffer = (T *) malloc((size.block_size + 2) * (size.d2 + 2) * (size.d3 + 2) * sizeof(T));
-    memset(pred_buffer, 0, (size.block_size + 2) * (size.d2 + 2) * (size.d3 + 2) * sizeof(T));
+    size_t buffer_dim0_offset = (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer);
+    size_t buffer_dim1_offset = size.d3 + params.lorenzo_layer;
+    T *pred_buffer = (T *) malloc((size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
+    memset(pred_buffer, 0, (size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
 	auto *lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_3d_pred<T>;
 	if(params.prediction_dim == 2) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
 	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
@@ -178,7 +178,7 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
                     // regression
                     block_pred_and_decompress_regression_3d_with_buffer_knl(reg_poly_params_pos, pred_buffer_pos, precision, intv_radius,
                                                                             size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, true, params.lorenzo_layer);
-                    reg_params_pos += RegPolyCoeffNum3d;
+                    reg_poly_params_pos += RegPolyCoeffNum3d;
                 }else if (*indicator_pos==SELECTOR_REGRESSION){
 					// regression
 					block_pred_and_decompress_regression_3d_with_buffer_knl(reg_params_pos, pred_buffer_pos, precision, intv_radius,

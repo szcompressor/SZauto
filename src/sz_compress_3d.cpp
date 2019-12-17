@@ -360,7 +360,6 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                        buffer_dim1_offset, size.dim0_offset, size.dim1_offset,
                                                                        type_pos, unpred_count_buffer, unpred_data_buffer, offset, params.lorenzo_layer, true);
 
-
                     reg_poly_count++;
                     reg_poly_params_pos += RegPolyCoeffNum3d;
                     reg_poly_params_type_pos += RegPolyCoeffNum3d;
@@ -525,12 +524,12 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
     if (reg_poly_count) {
 		encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d*reg_poly_count,
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
-        printf("block %ld  poly count %ld, unpredictable %ld\n", size.num_blocks, reg_poly_count, reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data);
-
     }
 
+    printf("block %ld; lorenzo %ld, regression %ld, poly regression %ld\n", size.num_blocks,
+           size.num_blocks - reg_count - reg_poly_count, reg_count, reg_poly_count);
 
-	Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
+    Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 
 	compressed_size = compressed_pos - compressed;
 	free(indicator);

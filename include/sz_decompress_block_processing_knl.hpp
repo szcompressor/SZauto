@@ -77,7 +77,7 @@ block_pred_and_decompress_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, T
 	const int *& type_pos, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data_pos, const int layer){
 	T * cur_data_pos = dec_data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
-    T * buffer_pos = buffer + 2*(buffer_dim0_offset + buffer_dim1_offset + 1);
+    T * buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
 
     for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
@@ -119,7 +119,7 @@ block_pred_and_decompress_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, T
 	const int *& type_pos, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data_pos, const int layer){
 	T * cur_data_pos = dec_data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
-    T * buffer_pos = buffer + 2*(buffer_dim0_offset + buffer_dim1_offset + 1);
+    T * buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
 
     for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
@@ -171,7 +171,7 @@ block_pred_and_decompress_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, T
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset, size_t dim0_offset, size_t dim1_offset, 
 	const int *& type_pos, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data_pos, const int layer){
 	T * cur_data_pos = dec_data_pos;
-	T * buffer_pos = buffer + 2*(buffer_dim0_offset + buffer_dim1_offset + 1);
+	T * buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
 	for(int i=0; i<size_x; i++){
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
