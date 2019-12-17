@@ -114,7 +114,7 @@ template<typename T>
 inline void
 block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer){
+	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
 	const T * cur_data_pos = data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
     T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
@@ -130,7 +130,7 @@ block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const 
 					T * cur_buffer_pos = buffer_pos + k;
 					T cur_data = cur_data_pos[k];
                     T pred;
-					if (layer==2){
+					if (use_2layer){
                         pred = +2 * cur_buffer_pos[-buffer_dim0_offset]
                                - cur_buffer_pos[-2 * buffer_dim0_offset];
 					}else{
@@ -177,7 +177,7 @@ template<typename T>
 inline void
 block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer){
+	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
 	const T * cur_data_pos = data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
     T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
@@ -193,7 +193,7 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 					T * cur_buffer_pos = buffer_pos + k;
 					T cur_data = cur_data_pos[k];
                     T pred;
-                    if (layer == 2) {
+                    if (use_2layer) {
                         pred = 2 * cur_buffer_pos[-buffer_dim1_offset]
                                - cur_buffer_pos[-2 * buffer_dim1_offset]
                                + 2 * cur_buffer_pos[- buffer_dim0_offset]
@@ -251,9 +251,10 @@ template<typename T>
 inline void
 block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
                                             int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-                                            size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer){
+                                            size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int padding_layer,
+                                            bool use_2layer){
     const T * cur_data_pos = data_pos;
-    T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
+    T *buffer_pos = buffer + padding_layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
     for(int i=0; i<size_x; i++){
         for(int j=0; j<size_y; j++){
             for(int k=0; k<size_z; k++){
@@ -265,7 +266,7 @@ block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const 
                     T * cur_buffer_pos = buffer_pos + k;
                     T cur_data = cur_data_pos[k];
                     T pred;
-                    if (layer == 2) {
+                    if (use_2layer) {
                         pred = 2 * cur_buffer_pos[-1]
                                - cur_buffer_pos[-2]
                                + 2 * cur_buffer_pos[-buffer_dim1_offset]

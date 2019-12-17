@@ -8,7 +8,6 @@
 #define QuantIntvSampleCapacity 32768
 #define QuantIntvAccThreshold 0.999
 #define RegThresholdSize3d 4
-#define LorenzeNoise3d 1.22
 
 template <typename T>
 inline void

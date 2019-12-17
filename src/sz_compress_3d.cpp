@@ -266,8 +266,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                             size_t & reg_poly_count) {
     reg_count = 0;
     reg_poly_count = 0;
+    size_t lorenzo_count=0;
+    size_t lorenzo_2layer_count=0;
 
-    const float noise = precision * LorenzeNoise3d;
 	int * type_pos = type;
 	int * indicator_pos = indicator;
 
@@ -313,10 +314,10 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 
 	// maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
     // 2-layer use_lorenzo
-    size_t buffer_dim0_offset = (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer);
-    size_t buffer_dim1_offset = size.d3 + params.lorenzo_layer;
-    T *pred_buffer = (T *) malloc((size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
-    memset(pred_buffer, 0, (size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
+    size_t buffer_dim0_offset = (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer);
+    size_t buffer_dim1_offset = size.d3 + params.lorenzo_padding_layer;
+    T *pred_buffer = (T *) malloc((size.block_size + params.lorenzo_padding_layer) * (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer) * sizeof(T));
+    memset(pred_buffer, 0, (size.block_size + params.lorenzo_padding_layer) * (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer) * sizeof(T));
 	int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
 	auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred<T>;
 	if(params.prediction_dim == 2) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_2d_pred<T>;
@@ -344,7 +345,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                       reg_poly_params_pos, coef_aux_list);
                 }
                 int selection_result = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
-                                                                 min_size, noise, reg_params_pos, reg_poly_params_pos,
+                                                                 min_size, precision, reg_params_pos, reg_poly_params_pos,
                                                                  params.prediction_dim,
                                                                  params.use_lorenzo, params.use_lorenzo_2layer,
                                                                  params.use_regression_linear, params.use_regression_poly);
@@ -358,7 +359,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
                                                                        buffer_dim1_offset, size.dim0_offset, size.dim1_offset,
-                                                                       type_pos, unpred_count_buffer, unpred_data_buffer, offset, params.lorenzo_layer, true);
+                                                                       type_pos, unpred_count_buffer, unpred_data_buffer, offset, params.lorenzo_padding_layer, true);
 
                     reg_poly_count++;
                     reg_poly_params_pos += RegPolyCoeffNum3d;
@@ -371,7 +372,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
                                                                        buffer_dim1_offset, size.dim0_offset, size.dim1_offset,
-                                                                       type_pos, unpred_count_buffer, unpred_data_buffer, offset, params.lorenzo_layer, false);
+                                                                       type_pos, unpred_count_buffer, unpred_data_buffer, offset, params.lorenzo_padding_layer, false);
                     reg_count++;
                     reg_params_pos += RegCoeffNum3d;
                     reg_params_type_pos += RegCoeffNum3d;
@@ -381,7 +382,12 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                            intv_radius,
                                            size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset,
                                            size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset,
-                                           params.lorenzo_layer);
+                                           params.lorenzo_padding_layer, (selection_result == SELECTOR_LORENZO_2LAYER));
+                    if (selection_result == SELECTOR_LORENZO_2LAYER) {
+                        lorenzo_2layer_count++;
+                    } else {
+                        lorenzo_count++;
+                    }
                 }
 				pred_buffer_pos += size.block_size;
 				indicator_pos ++;
@@ -391,12 +397,16 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 			pred_buffer_pos += size.block_size*buffer_dim1_offset - size.block_size*size.num_z;
 		}
 		// copy bottom of buffer to top of buffer
-		memcpy(pred_buffer, pred_buffer + size.block_size * buffer_dim0_offset,params.lorenzo_layer * buffer_dim0_offset * sizeof(T));
+		memcpy(pred_buffer, pred_buffer + size.block_size * buffer_dim0_offset, params.lorenzo_padding_layer * buffer_dim0_offset * sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
 	free(pred_buffer);
 	free(reg_params);
 	free(reg_poly_params);
+
+	printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
+           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
+
 //	printf(" #block: %d  #regression %ld #poly %ld", size.num_blocks, reg_count, reg_poly_count);
 }
 
@@ -526,8 +536,6 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
 
-    printf("block %ld; lorenzo %ld, regression %ld, poly regression %ld\n", size.num_blocks,
-           size.num_blocks - reg_count - reg_poly_count, reg_count, reg_poly_count);
 
     Huffman_encode_tree_and_data(2*capacity, type, size.num_elements, compressed_pos);
 

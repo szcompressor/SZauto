@@ -52,7 +52,6 @@ int main(int argc, char ** argv){
     cout << "Compression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
     cout << "Compressed size = " << lossless_outsize << ", ratio = " << (num_elements*sizeof(float)) * 1.0/lossless_outsize << endl;
     free(result);
-
     err = clock_gettime(CLOCK_REALTIME, &start);
     size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, result_after_lossless, lossless_outsize, &result, result_size);
     float * dec_data = sz_decompress_3d_knl<float>(result, r1, r2, r3);

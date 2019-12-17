@@ -157,10 +157,10 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 	const float * reg_params_pos = reg_params;
 	const float * reg_poly_params_pos = reg_poly_params;
 	// add one more ghost layer
-    size_t buffer_dim0_offset = (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer);
-    size_t buffer_dim1_offset = size.d3 + params.lorenzo_layer;
-    T *pred_buffer = (T *) malloc((size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
-    memset(pred_buffer, 0, (size.block_size + params.lorenzo_layer) * (size.d2 + params.lorenzo_layer) * (size.d3 + params.lorenzo_layer) * sizeof(T));
+    size_t buffer_dim0_offset = (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer);
+    size_t buffer_dim1_offset = size.d3 + params.lorenzo_padding_layer;
+    T *pred_buffer = (T *) malloc((size.block_size + params.lorenzo_padding_layer) * (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer) * sizeof(T));
+    memset(pred_buffer, 0, (size.block_size + params.lorenzo_padding_layer) * (size.d2 + params.lorenzo_padding_layer) * (size.d3 + params.lorenzo_padding_layer) * sizeof(T));
 	auto *lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_3d_pred<T>;
 	if(params.prediction_dim == 2) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_2d_pred<T>;
 	else if(params.prediction_dim == 1) lorenzo_pred_and_decomp = block_pred_and_decompress_lorenzo_3d_knl_1d_pred<T>;
@@ -177,17 +177,17 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
                 if(*indicator_pos==SELECTOR_REGRESSION_POLY){
                     // regression
                     block_pred_and_decompress_regression_3d_with_buffer_knl(reg_poly_params_pos, pred_buffer_pos, precision, intv_radius,
-                                                                            size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, true, params.lorenzo_layer);
+                                                                            size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, true, params.lorenzo_padding_layer);
                     reg_poly_params_pos += RegPolyCoeffNum3d;
                 }else if (*indicator_pos==SELECTOR_REGRESSION){
 					// regression
 					block_pred_and_decompress_regression_3d_with_buffer_knl(reg_params_pos, pred_buffer_pos, precision, intv_radius,
-						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, false, params.lorenzo_layer);
+						size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, false, params.lorenzo_padding_layer);
 					reg_params_pos += RegCoeffNum3d;
                 } else {
 					// Lorenzo
 					lorenzo_pred_and_decomp(mean_info, pred_buffer_pos, precision, intv_radius, size_x, size_y, size_z,
-							buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, params.lorenzo_layer);
+							buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset, size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset, z_data_pos, params.lorenzo_padding_layer, *indicator_pos==SELECTOR_LORENZO_2LAYER);
 				}
 				pred_buffer_pos += size.block_size;
 				indicator_pos ++;
@@ -196,7 +196,7 @@ prediction_and_decompression_3d_with_border_prediction_and_knl_optimization(cons
 			y_data_pos += size.block_size*size.dim1_offset;
 			pred_buffer_pos += size.block_size*buffer_dim1_offset - size.block_size*size.num_z;
 		}
-        memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, params.lorenzo_layer * buffer_dim0_offset*sizeof(T));
+        memcpy(pred_buffer, pred_buffer + size.block_size*buffer_dim0_offset, params.lorenzo_padding_layer * buffer_dim0_offset * sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
 	free(pred_buffer);

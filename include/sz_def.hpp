@@ -18,7 +18,7 @@ struct sz_params{
 	int increase_quant_intv;
     bool use_lorenzo;
 	bool use_lorenzo_2layer;
-	int lorenzo_layer;
+	int lorenzo_padding_layer;
 	bool use_regression_linear;
 	bool use_regression_poly;
 
@@ -26,9 +26,9 @@ struct sz_params{
               bool rp = false) :
             block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
             use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(rl), use_regression_poly(rp) {
-        lorenzo_layer=1;
+        lorenzo_padding_layer=1;
         if (use_lorenzo_2layer) {
-            lorenzo_layer = 2;
+            lorenzo_padding_layer = 2;
         }
     }
 };
@@ -71,17 +71,25 @@ struct meanInfo{
 	}
 };
 
-#define MAX(a, b) a>b?a:b
-#define MIN(a, b) a<b?a:b
+#define MAX(a, b) ((a<b)?(a):(b))
+#define MIN(a, b) ((a<b)?(a):(b))
 
 #define SELECTOR_RADIUS 8
 #define SELECTOR_LORENZO 0
 #define SELECTOR_REGRESSION 1
-#define SELECTOR_REGRESSION_POLY 2
+#define SELECTOR_LORENZO_2LAYER 2
+#define SELECTOR_REGRESSION_POLY 3
 #define RegCoeffNum3d 4
 #define RegPolyCoeffNum3d 10
 #define RegErrThreshold 0.1
 #define RegCoeffRadius 32768
 #define RegCoeffCapacity 65536
+#define LorenzeNoise1d 0.5
+#define LorenzeNoise2d 0.81
+#define LorenzeNoise3d 1.22
+#define Lorenze2LayerNoise1d 1.08
+#define Lorenze2LayerNoise2d 2.76
+#define Lorenze2LayerNoise3d 6.8
+
 #endif
 
