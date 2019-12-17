@@ -31,7 +31,7 @@ recover(float pred, double precision, int type_val, int intv_radius, const T *& 
 	}
 }
 
-// de-quantization, for lorenzo
+// de-quantization, for use_lorenzo
 template<typename T>
 inline T
 recover(const meanInfo<T>& mean_info, float pred, double precision, int type_val, int intv_radius, const T *& unpredictable_data_pos){
@@ -81,5 +81,39 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 	return reg_params;
 }
 
+template<typename T>
+float *
+decode_regression_poly_coefficients(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision){
+	size_t reg_unpredictable_count = 0;
+	read_variable_from_src(compressed_pos, reg_unpredictable_count);
+	const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
+	compressed_pos += reg_unpredictable_count * sizeof(float);
+	int * reg_type = Huffman_decode_tree_and_data(2*RegCoeffCapacity, RegPolyCoeffNum3d*reg_count, compressed_pos);
+	float * reg_params = (float *) malloc(RegPolyCoeffNum3d*(reg_count + 1)*sizeof(float));
+	for(int i=0; i<RegPolyCoeffNum3d; i++)
+		reg_params[i] = 0;
+
+	T reg_precisions_poly[RegPolyCoeffNum3d];
+	T rel_param_err_poly = RegErrThreshold * precision;
+    reg_precisions_poly[0]= rel_param_err_poly/2;
+    for (int i = 1; i < 4; i++) {
+        reg_precisions_poly[i] = rel_param_err_poly / RegPolyCoeffNum3d;
+    }
+    for (int i = 4; i < 10; i++) {
+        reg_precisions_poly[i] = rel_param_err_poly / RegPolyCoeffNum3d / block_size;
+    }
+
+	float * prev_reg_params = reg_params;
+	float * reg_params_pos = reg_params + RegPolyCoeffNum3d;
+	const int * type_pos = (const int *) reg_type;
+	for(int i=0; i<reg_count; i++){
+		for(int j=0; j<RegPolyCoeffNum3d; j++){
+			*reg_params_pos = recover(*prev_reg_params, reg_precisions_poly[j], *(type_pos++), RegCoeffRadius, reg_unpredictable_data_pos);
+			prev_reg_params ++, reg_params_pos ++;
+		}
+	}
+	free(reg_type);
+	return reg_params;
+}
 
 #endif

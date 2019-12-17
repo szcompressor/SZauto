@@ -4,7 +4,7 @@ void
 encode_regression_coefficients(const int * reg_params_type, const float * reg_unpredictable_data, size_t reg_count, size_t reg_unpredictable_count, unsigned char *& compressed_pos){
 	write_variable_to_dst(compressed_pos, reg_unpredictable_count);
 	write_array_to_dst(compressed_pos, reg_unpredictable_data, reg_unpredictable_count);
-	Huffman_encode_tree_and_data(2*RegCoeffCapacity, reg_params_type, RegCoeffNum3d*reg_count, compressed_pos);
+	Huffman_encode_tree_and_data(2*RegCoeffCapacity, reg_params_type, reg_count, compressed_pos);
 }
 
 // copied from conf.c

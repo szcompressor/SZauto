@@ -1,5 +1,5 @@
 add_executable (sz_test1 sz_compress_test.cpp)
-add_executable (sz_test2 sz_after_prediction.cpp)
+add_executable (sz_test2 sz_huffman_lossless.cpp)
 target_include_directories (sz_test1 PRIVATE ${ZSTD_INCLUDES})
 target_include_directories (sz_test2 PRIVATE ${ZSTD_INCLUDES})
 target_include_directories (sz_test1 PRIVATE ${PROJECT_SOURCE_DIR}/include)

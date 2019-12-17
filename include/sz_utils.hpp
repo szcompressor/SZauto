@@ -10,7 +10,7 @@
 #include <ctime>
 
 template<typename Type>
-Type * readfile(char * file, size_t& num){
+Type * readfile(const char * file, size_t& num){
 	std::ifstream fin(file, std::ios::binary);
 	if(!fin){
         std::cout << " Error, Couldn't find the file" << "\n";

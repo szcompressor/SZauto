@@ -43,7 +43,7 @@ block_pred_and_decompress_regression_3d_with_buffer(const float * reg_params_pos
 	}
 }
 
-// block-independant lorenzo pred & decompress
+// block-independant use_lorenzo pred & decompress
 template<typename T>
 inline void
 block_pred_and_decompress_lorenzo_3d(const meanInfo<T>& mean_info, T * buffer, double precision, int intv_radius, 

@@ -1,8 +1,8 @@
 #include "sz_compress_3d.hpp"
 #include "sz_lossless.hpp"
-#include "utils.hpp"
+#include "sz_utils.hpp"
 #include "sz_compression_utils.hpp"
-#include "utils.hpp"
+#include "sz_utils.hpp"
 
 using namespace std;
 

@@ -13,14 +13,24 @@ using namespace std;
 
 struct sz_params{
 	bool block_independant;
-	bool all_lorenzo;
-	bool all_regression;
 	int block_size;
 	int prediction_dim;
 	int increase_quant_intv;
+    bool use_lorenzo;
+	bool use_lorenzo_2layer;
 	int lorenzo_layer;
-	int regression_layer;
-	sz_params(bool bi=false, bool al=false, bool ar=false, int bs=6, int pd=3, int iqi=0): block_independant(bi), all_lorenzo(al), all_regression(ar), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi){}
+	bool use_regression_linear;
+	bool use_regression_poly;
+
+    sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool rl = true,
+              bool rp = false) :
+            block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
+            use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(rl), use_regression_poly(rp) {
+        lorenzo_layer=1;
+        if (use_lorenzo_2layer) {
+            lorenzo_layer = 2;
+        }
+    }
 };
 const sz_params default_params(false, false, false,6, 3, 0);
 
@@ -64,7 +74,12 @@ struct meanInfo{
 #define MAX(a, b) a>b?a:b
 #define MIN(a, b) a<b?a:b
 
+#define SELECTOR_RADIUS 8
+#define SELECTOR_LORENZO 0
+#define SELECTOR_REGRESSION 1
+#define SELECTOR_REGRESSION_POLY 2
 #define RegCoeffNum3d 4
+#define RegPolyCoeffNum3d 10
 #define RegErrThreshold 0.1
 #define RegCoeffRadius 32768
 #define RegCoeffCapacity 65536

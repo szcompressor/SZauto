@@ -1,7 +1,7 @@
 #include "sz_compress_3d.hpp"
 #include "sz_decompress_3d.hpp"
 #include "sz_lossless.hpp"
-#include "utils.hpp"
+#include "sz_utils.hpp"
 using namespace std;
 
 int main(int argc, char ** argv){
@@ -10,35 +10,42 @@ int main(int argc, char ** argv){
     int r1 = atoi(argv[2]);
     int r2 = atoi(argv[3]);
     int r3 = atoi(argv[4]);
-    double eb = atof(argv[5]);
-    int use_knl = atoi(argv[6]);
+
+    float eb = atof(argv[5]);
+    float preb = atof(argv[6]);
     int block_size = atoi(argv[7]);
-    int pred_dim = atoi(argv[8]);
-    int all_lorenzo = atoi(argv[9]);
-    int increase_quant_intv = atoi(argv[10]);
-    int all_regression = atoi(argv[11]);
+    int stride = atoi(argv[8]);
+    int pred_dim = atoi(argv[9]);
+    int lorenzo_op = atoi(argv[10]);
+    int regression_op = atoi(argv[11]);
+
+    bool lorenzo = lorenzo_op == 1 || lorenzo_op == 3;
+    bool lorenzo_2layer = lorenzo_op == 2 || lorenzo_op == 3;
+    bool regression_linear = regression_op == 1 || regression_op == 3;
+    bool regression_poly = regression_op == 2 || regression_op == 3;
+
     float max = data[0];
     float min = data[0];
     for(int i=1; i<num_elements; i++){
         if(max < data[i]) max = data[i];
         if(min > data[i]) min = data[i];
     }
-    cout << "Options" << endl;
-    cout << "use_knl = " << use_knl << ", block_size = " << block_size << ", pred_dim = " << pred_dim << ", all_lorenzo = "
-         << all_lorenzo << ", all_regression= " << all_regression << endl;
-    cout << "change_quant_intv_size = " << increase_quant_intv << endl;
-    cout << endl;
+    int increase_quant_intv = 0;
+    cout << "Options: block_size = " << block_size << ", pred_dim = " << pred_dim
+            << ", use_lorenzo=" << lorenzo
+            << ", use_lorenzo_2layer=" << lorenzo_2layer
+            << ", use_regression_linear=" << regression_linear
+            << ", use_regression_poly=" << regression_poly
+            << endl;
     cout << "value range = " << max - min << endl;
     cout << "precision = " << eb*(max - min) << endl;
     size_t result_size = 0;
     struct timespec start, end;
     int err = 0;
     err = clock_gettime(CLOCK_REALTIME, &start);
-    auto *compress_func1 = sz_compress_3d<float>;
-    auto *compress_func2 = sz_compress_3d_knl<float>;
-    auto *compress_func = use_knl ? compress_func2 : compress_func1;
-    sz_params params(false, all_lorenzo, all_regression, block_size, pred_dim, increase_quant_intv);
-    unsigned char * result =  compress_func(data, r1, r2, r3, eb*(max - min), result_size, params);
+    sz_params params(false, block_size, pred_dim, increase_quant_intv, lorenzo, lorenzo_2layer,
+                     regression_linear, regression_poly);
+    unsigned char * result =  sz_compress_3d_knl<float>(data, r1, r2, r3, eb*(max - min), result_size, params);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
     err = clock_gettime(CLOCK_REALTIME, &end);
@@ -48,10 +55,7 @@ int main(int argc, char ** argv){
     exit(0);
     err = clock_gettime(CLOCK_REALTIME, &start);
     size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, result_after_lossless, lossless_outsize, &result, result_size);
-    auto *decompress_func1 = sz_decompress_3d<float>;
-    auto *decompress_func2 = sz_decompress_3d_knl<float>;
-    auto *decompress_func = use_knl ? decompress_func2 : decompress_func1;
-    float * dec_data = decompress_func(result, r1, r2, r3);
+    float * dec_data = sz_decompress_3d_knl<float>(result, r1, r2, r3);
     err = clock_gettime(CLOCK_REALTIME, &end);
     cout << "Decompression time: " << (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec)/(double)1000000000 << "s" << endl;
     free(result_after_lossless);
