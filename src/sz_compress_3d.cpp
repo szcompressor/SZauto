@@ -289,23 +289,21 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 
 	T reg_precisions[RegCoeffNum3d];
 	T reg_recip_precisions[RegCoeffNum3d];
-	T rel_param_err = RegErrThreshold * precision / RegCoeffNum3d;
 	for(int i=0; i<RegCoeffNum3d-1; i++){
-		reg_precisions[i] = rel_param_err / size.block_size;
+		reg_precisions[i] = params.regression_param_eb_linear;
 		reg_recip_precisions[i] = 1.0 / reg_precisions[i];
 	}
-	reg_precisions[RegCoeffNum3d - 1] = rel_param_err;
+	reg_precisions[RegCoeffNum3d - 1] = params.regression_param_eb_independent;
 	reg_recip_precisions[RegCoeffNum3d - 1] = 1.0 / reg_precisions[RegCoeffNum3d - 1];
 
 	T reg_poly_precisions[RegPolyCoeffNum3d];
     T reg_poly_recip_precisions[RegPolyCoeffNum3d];
-    T rel_poly_param_err = RegErrThreshold * precision;
-	reg_poly_precisions[0]= rel_poly_param_err / 2;
+    reg_poly_precisions[0] = params.poly_regression_param_eb_independent;
     for (int i = 1; i < 4; i++) {
-		reg_poly_precisions[i] = rel_poly_param_err / RegPolyCoeffNum3d;
+        reg_poly_precisions[i] = params.poly_regression_param_eb_linear;
     }
     for (int i = 4; i < 10; i++) {
-		reg_poly_precisions[i] = rel_poly_param_err / RegPolyCoeffNum3d / size.block_size;
+        reg_poly_precisions[i] = params.poly_regression_param_eb_poly;
     }
 	for (int i = 0; i < 10; i++) {
 		reg_poly_recip_precisions[i] = 1.0 / reg_poly_precisions[i];
@@ -340,7 +338,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset,
                                                       reg_params_pos);
                 }
-                if (params.use_regression_poly){
+                if (params.use_poly_regression){
                     compute_regression_coeffcients_3d_poly(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset,
                                                       reg_poly_params_pos, coef_aux_list);
                 }
@@ -348,7 +346,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                  min_size, precision, reg_params_pos, reg_poly_params_pos,
                                                                  params.prediction_dim,
                                                                  params.use_lorenzo, params.use_lorenzo_2layer,
-                                                                 params.use_regression_linear, params.use_regression_poly);
+                                                                 params.use_regression_linear, params.use_poly_regression, params.poly_regression_noise);
                 *indicator_pos = selection_result;
                 if (selection_result == SELECTOR_REGRESSION_POLY) {
 

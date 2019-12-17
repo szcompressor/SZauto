@@ -35,7 +35,7 @@ int main(int argc, char ** argv){
             << ", use_lorenzo=" << lorenzo
             << ", use_lorenzo_2layer=" << lorenzo_2layer
             << ", use_regression_linear=" << regression_linear
-            << ", use_regression_poly=" << regression_poly
+            << ", use_poly_regression=" << regression_poly
             << endl;
     cout << "value range = " << max - min << endl;
     cout << "precision = " << eb*(max - min) << endl;
@@ -44,7 +44,7 @@ int main(int argc, char ** argv){
     int err = 0;
     err = clock_gettime(CLOCK_REALTIME, &start);
     sz_params params(false, block_size, pred_dim, increase_quant_intv, lorenzo, lorenzo_2layer,
-                     regression_linear, regression_poly);
+                     regression_linear,  regression_poly,eb*(max - min), 0);
     unsigned char * result =  sz_compress_3d_knl<float>(data, r1, r2, r3, eb*(max - min), result_size, params);
     unsigned char * result_after_lossless = NULL;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);

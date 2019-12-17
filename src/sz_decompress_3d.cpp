@@ -280,11 +280,11 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
     const float *reg_poly_params_pos = nullptr;
 	T precision_t = (T) precision;
     if (reg_count) {
-        reg_params = decode_regression_coefficients(compressed_pos, reg_count, size.block_size, precision_t);
+        reg_params = decode_regression_coefficients_v2(compressed_pos, reg_count, size.block_size, precision_t, params);
         reg_params_pos = (const float *) (reg_params + RegCoeffNum3d);
     }
     if (reg_poly_count) {
-        reg_poly_params = decode_regression_poly_coefficients(compressed_pos, reg_poly_count, size.block_size, precision_t);
+        reg_poly_params = decode_poly_regression_coefficients_v2(compressed_pos, reg_poly_count, size.block_size, precision_t, params);
         reg_poly_params_pos = (const float *) (reg_poly_params + RegPolyCoeffNum3d);
     }
 	int * type = Huffman_decode_tree_and_data(4*intv_radius, size.num_elements, compressed_pos);

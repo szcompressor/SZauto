@@ -83,7 +83,35 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 
 template<typename T>
 float *
-decode_regression_poly_coefficients(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision){
+decode_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision, const sz_params &params){
+    size_t reg_unpredictable_count = 0;
+    read_variable_from_src(compressed_pos, reg_unpredictable_count);
+    const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
+    compressed_pos += reg_unpredictable_count * sizeof(float);
+    int * reg_type = Huffman_decode_tree_and_data(2*RegCoeffCapacity, RegCoeffNum3d*reg_count, compressed_pos);
+    float * reg_params = (float *) malloc(RegCoeffNum3d*(reg_count + 1)*sizeof(float));
+    for(int i=0; i<RegCoeffNum3d; i++)
+        reg_params[i] = 0;
+    T reg_precisions[RegCoeffNum3d];
+    for(int i=0; i<RegCoeffNum3d-1; i++){
+        reg_precisions[i] = params.regression_param_eb_linear;
+    }
+    reg_precisions[RegCoeffNum3d - 1] = params.regression_param_eb_independent;
+    float * prev_reg_params = reg_params;
+    float * reg_params_pos = reg_params + RegCoeffNum3d;
+    const int * type_pos = (const int *) reg_type;
+    for(int i=0; i<reg_count; i++){
+        for(int j=0; j<RegCoeffNum3d; j++){
+            *reg_params_pos = recover(*prev_reg_params, reg_precisions[j], *(type_pos++), RegCoeffRadius, reg_unpredictable_data_pos);
+            prev_reg_params ++, reg_params_pos ++;
+        }
+    }
+    free(reg_type);
+    return reg_params;
+}
+template<typename T>
+float *
+decode_poly_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision, const sz_params &params){
 	size_t reg_unpredictable_count = 0;
 	read_variable_from_src(compressed_pos, reg_unpredictable_count);
 	const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
@@ -93,14 +121,13 @@ decode_regression_poly_coefficients(const unsigned char *& compressed_pos, size_
 	for(int i=0; i<RegPolyCoeffNum3d; i++)
 		reg_params[i] = 0;
 
-	T reg_precisions_poly[RegPolyCoeffNum3d];
-	T rel_param_err_poly = RegErrThreshold * precision;
-    reg_precisions_poly[0]= rel_param_err_poly/2;
+    T reg_precisions_poly[RegPolyCoeffNum3d];
+    reg_precisions_poly[0] = params.poly_regression_param_eb_independent;
     for (int i = 1; i < 4; i++) {
-        reg_precisions_poly[i] = rel_param_err_poly / RegPolyCoeffNum3d;
+        reg_precisions_poly[i] = params.poly_regression_param_eb_linear;
     }
     for (int i = 4; i < 10; i++) {
-        reg_precisions_poly[i] = rel_param_err_poly / RegPolyCoeffNum3d / block_size;
+        reg_precisions_poly[i] = params.poly_regression_param_eb_poly;
     }
 
 	float * prev_reg_params = reg_params;
