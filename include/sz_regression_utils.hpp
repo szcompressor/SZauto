@@ -9,6 +9,10 @@
 inline size_t get_coef_aux_list_idx(const std::array<size_t, 3> &dims) {
     auto coef_aux_index = 0;
     for (auto &dim:dims) {
+        if (dim < 3) {
+            printf("ERROR, cannot use poly regression when block dim is less than 3");
+            exit(0);
+        }
         coef_aux_index = coef_aux_index * COEF_AUX_MAX_BLOCK + dim;
     }
     return coef_aux_index;
@@ -46,7 +50,7 @@ std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
 }
 
 template <typename T>
-inline void 
+inline void
 compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, float * reg_params_pos){
 	/*Calculate regression coefficients*/
 	const T * cur_data_pos = data_pos;
@@ -54,7 +58,7 @@ compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, in
 	float fy = 0.0;
 	float fz = 0.0;
 	float f = 0;
-	float sum_x, sum_y; 
+	float sum_x, sum_y;
 	T curData;
 	for(int i=0; i<size_x; i++){
 		sum_x = 0;

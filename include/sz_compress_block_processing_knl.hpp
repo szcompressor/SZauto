@@ -62,12 +62,10 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
 				T cur_data = cur_data_pos[j*dim1_offset + k];
 				T pred;
                 if (poly) {
-                    pred = reg_params_pos[0] + reg_params_pos[1] * (float) i + reg_params_pos[2] * (float) j +
-                           reg_params_pos[3] * (float) k
-                           + reg_params_pos[4] * (float) i * (float) i + reg_params_pos[5] * (float) i * (float) j +
-                           reg_params_pos[6] * (float) i * (float) k
-                           + reg_params_pos[7] * (float) j * (float) j + reg_params_pos[8] * (float) j * (float) k +
-                           reg_params_pos[9] * (float) k * (float) k;
+                    pred = (T)(reg_params_pos[0]
+                            + reg_params_pos[1] * i + reg_params_pos[2] * j +  reg_params_pos[3] *  k
+                            + reg_params_pos[4] * i * i + reg_params_pos[5] * i * j + reg_params_pos[6] * i * k
+                            + reg_params_pos[7] * j * j + reg_params_pos[8] * j * k + reg_params_pos[9] * k * k);
 
                 } else {
                     pred = (T) (reg_params_pos[0] * (float) i + reg_params_pos[1] * (float) j + reg_params_pos[2] * (float) k +

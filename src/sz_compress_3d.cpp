@@ -334,11 +334,15 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				int min_size = MIN(size_x, size_y);
 				min_size = MIN(min_size, size_z);
 
-				if (params.use_regression_linear){
+                bool enable_poly = params.use_poly_regression && min_size >= 3;
+                bool enable_regression = params.use_regression_linear;
+//                bool enable_regression = params.use_regression_linear && min_size >= 1;
+
+				if (enable_regression){
                     compute_regression_coeffcients_3d(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset,
                                                       reg_params_pos);
                 }
-                if (params.use_poly_regression){
+                if (enable_poly){
                     compute_regression_coeffcients_3d_poly(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset,
                                                       reg_poly_params_pos, coef_aux_list);
                 }
@@ -346,7 +350,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                  min_size, precision, reg_params_pos, reg_poly_params_pos,
                                                                  params.prediction_dim,
                                                                  params.use_lorenzo, params.use_lorenzo_2layer,
-                                                                 params.use_regression_linear, params.use_poly_regression, params.poly_regression_noise);
+                                                                 enable_regression, enable_poly, params.poly_regression_noise);
                 *indicator_pos = selection_result;
                 if (selection_result == SELECTOR_REGRESSION_POLY) {
 
@@ -398,7 +402,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 		memcpy(pred_buffer, pred_buffer + size.block_size * buffer_dim0_offset, params.lorenzo_padding_layer * buffer_dim0_offset * sizeof(T));
 		x_data_pos += size.block_size*size.dim0_offset;
 	}
-	free(pred_buffer);
+    free(pred_buffer);
 	free(reg_params);
 	free(reg_poly_params);
 

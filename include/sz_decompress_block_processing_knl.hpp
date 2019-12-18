@@ -50,10 +50,10 @@ block_pred_and_decompress_regression_3d_with_buffer_knl(const float * reg_params
 				}
 				else{
 				    if (poly){
-                        T pred = (T) (reg_params_pos[0] * 1.0
-                                      + reg_params_pos[1] * (float) i + reg_params_pos[2] * (float) j +  reg_params_pos[3] * (float) k
-                                      + reg_params_pos[4] * (float)i * i + reg_params_pos[5] * (float)i * j + reg_params_pos[6] * (float)i * k
-                                      + reg_params_pos[7] * (float)j * j + reg_params_pos[8] * (float)j * k + reg_params_pos[9] * (float)k * k);
+                        T pred = (T) (reg_params_pos[0]
+                                      + reg_params_pos[1] * i + reg_params_pos[2] * j +  reg_params_pos[3] *  k
+                                      + reg_params_pos[4] * i * i + reg_params_pos[5] * i * j + reg_params_pos[6] * i * k
+                                      + reg_params_pos[7] * j * j + reg_params_pos[8] * j * k + reg_params_pos[9] * k * k);
                         cur_data_pos[j*dim1_offset + k] = buffer_pos[j*buffer_dim1_offset + k] = pred + (T)(2 * (type_val - intv_radius)) * precision;
 
 				    }else{
