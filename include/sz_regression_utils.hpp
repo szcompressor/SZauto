@@ -3,7 +3,8 @@
 #include "sz_utils.hpp"
 #include "sz_def.hpp"
 #include <array>
-
+#include <iomanip>
+#include <algorithm>
 #define COEF_AUX_MAX_BLOCK 17
 
 inline size_t get_coef_aux_list_idx(const std::array<size_t, 3> &dims) {
