@@ -30,8 +30,13 @@ template<typename T>
 std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
 
     size_t num = 0;
-    std::string bin_file_path = "/Users/kzhao/Documents/Workspace/sz_refactory/data/PolyRegressionCoefAux3D.f32";
-    auto data = readfile<float>(bin_file_path.data(), num);
+    T* data;
+#ifdef POLY_REGRESSION_COEF_FILE
+    data = readfile<float>(POLY_REGRESSION_COEF_FILE, num);
+#else
+    printf("cannot find poly regression aux file.");
+    exit(1);
+#endif
 
     auto coef_aux_p = &data[0];
     std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> coef_aux_list = std::vector<std::array<T,
