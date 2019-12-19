@@ -21,11 +21,12 @@ float compress(float *data, size_t num_elements, int r1, int r2, int r3, float p
          << ", regression = " << regression_linear
          << ", regression2 = " << regression_poly
          << endl
-         << "  reg_eb_base=" << reg_eb_base
+         << " reg_eb_base=" << reg_eb_base
          << ", reg_eb_1=" << reg_eb_1
          << ", poly_reg_eb_base=" << poly_reg_eb_base
          << ", poly_reg_eb_1=" << poly_reg_eb_1
          << ", poly_reg_eb_2=" << poly_reg_eb_2
+         << ", poly_regression_noise=" << poly_regression_noise
          << endl;
 
     size_t result_size = 0;
