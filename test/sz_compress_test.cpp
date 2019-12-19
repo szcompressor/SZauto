@@ -72,6 +72,8 @@ float compress(float *data, size_t num_elements, int r1, int r2, int r3, float p
         psnr = verify(data, dec_data, num_elements);
         free(result);
         free(dec_data);
+    } else {
+        free(result_after_lossless);
     }
 
     return ratio;

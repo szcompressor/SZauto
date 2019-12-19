@@ -52,6 +52,7 @@ std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
         coef_aux_p += RegPolyCoeffNum3d * RegPolyCoeffNum3d;
     }
 //    display_coef_aux(coef_aux_list[get_coef_aux_list_idx( std::array<size_t, 3>{6, 6, 6})]);
+    free(data);
     return coef_aux_list;
 }
 
