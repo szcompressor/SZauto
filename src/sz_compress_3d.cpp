@@ -335,7 +335,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 				min_size = MIN(min_size, size_z);
 
                 bool enable_poly = params.use_poly_regression && min_size >= 3;
-                bool enable_regression = params.use_regression_linear;
+                bool enable_regression = params.use_regression_linear && min_size >= 2;
 //                bool enable_regression = params.use_regression_linear && min_size >= 1;
 
 				if (enable_regression){

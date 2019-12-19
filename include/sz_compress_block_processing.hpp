@@ -103,7 +103,6 @@ sz_blockwise_selection_3d(const T *data_pos, const meanInfo<T> &mean_info, size_
                                      dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
                                      use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
     }
-    //TODO kai add weights for reg_poly
     if (use_regression && (!use_lorenzo || err_reg <= err_lorenzo)
         && (!use_poly_regression || err_reg <= err_reg_poly)
         && (!use_lorenzo_2layer || err_reg < err_lorenzo_2layer)) {

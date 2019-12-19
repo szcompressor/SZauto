@@ -95,11 +95,10 @@ block_pred_and_decompress_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, T
 					else{
 					    T pred;
 					    if (use_2layer){
-                            pred = +2 * cur_buffer_pos[-buffer_dim0_offset]
-                                   - cur_buffer_pos[-2 * buffer_dim0_offset];
-					    }else{
-                            pred = cur_buffer_pos[-buffer_dim0_offset];
-					    }
+							pred = 2 * cur_buffer_pos[-1] - cur_buffer_pos[-2];
+						} else {
+							pred = cur_buffer_pos[-1];
+						}
 						cur_data_pos[k] = *cur_buffer_pos = pred + (T)(2 * (type_val - intv_radius)) * precision;
 					}
 				}
@@ -138,17 +137,17 @@ block_pred_and_decompress_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, T
 					else{
 					    T pred;
                         if (use_2layer) {
-                            pred = 2 * cur_buffer_pos[-buffer_dim1_offset]
-                                   - cur_buffer_pos[-2 * buffer_dim1_offset]
-                                   + 2 * cur_buffer_pos[-buffer_dim0_offset]
-                                   - 4 * cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset]
-                                   + 2 * cur_buffer_pos[-buffer_dim0_offset - 2 * buffer_dim1_offset]
+                            pred = 2 * cur_buffer_pos[-buffer_dim0_offset]
                                    - cur_buffer_pos[-2 * buffer_dim0_offset]
-                                   + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - buffer_dim1_offset]
-                                   - cur_buffer_pos[-2 * buffer_dim0_offset - 2 * buffer_dim1_offset];
+                                   + 2 * cur_buffer_pos[-1]
+                                   - 4 * cur_buffer_pos[-1 - buffer_dim0_offset]
+                                   + 2 * cur_buffer_pos[-1 - 2 * buffer_dim0_offset]
+                                   - cur_buffer_pos[-2]
+                                   + 2 * cur_buffer_pos[-2 - buffer_dim0_offset]
+                                   - cur_buffer_pos[-2 - 2 * buffer_dim0_offset];
                         } else {
-                            pred = cur_buffer_pos[-buffer_dim0_offset] + cur_buffer_pos[-buffer_dim1_offset] -
-                                   cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset];
+                            pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim0_offset] -
+                                   cur_buffer_pos[-1 - buffer_dim0_offset];
                         }
 						cur_data_pos[k] = *cur_buffer_pos = pred + (T)(2 * (type_val - intv_radius)) * precision;
 						if(cur_data_pos + k - dec_data_sp_float == -1){

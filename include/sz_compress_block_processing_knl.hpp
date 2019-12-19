@@ -129,10 +129,9 @@ block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const 
 					T cur_data = cur_data_pos[k];
                     T pred;
 					if (use_2layer){
-                        pred = +2 * cur_buffer_pos[-buffer_dim0_offset]
-                               - cur_buffer_pos[-2 * buffer_dim0_offset];
+                        pred = 2 * cur_buffer_pos[-1] - cur_buffer_pos[-2];
 					}else{
-                        pred = cur_buffer_pos[-buffer_dim0_offset];
+                        pred = cur_buffer_pos[-1];
 					}
 					T diff = cur_data - pred;
 					int quant_index = (int)(fabs(diff) * recip_precision) + 1;
@@ -192,16 +191,16 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 					T cur_data = cur_data_pos[k];
                     T pred;
                     if (use_2layer) {
-                        pred = 2 * cur_buffer_pos[-buffer_dim1_offset]
-                               - cur_buffer_pos[-2 * buffer_dim1_offset]
-                               + 2 * cur_buffer_pos[- buffer_dim0_offset]
-                               - 4 * cur_buffer_pos[- buffer_dim0_offset - buffer_dim1_offset]
-                               + 2 * cur_buffer_pos[-buffer_dim0_offset - 2 * buffer_dim1_offset]
+                        pred = 2 * cur_buffer_pos[-buffer_dim0_offset]
                                - cur_buffer_pos[-2 * buffer_dim0_offset]
-                               + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - buffer_dim1_offset]
-                               - cur_buffer_pos[-2 * buffer_dim0_offset - 2 * buffer_dim1_offset];
+                               + 2 * cur_buffer_pos[-1]
+                               - 4 * cur_buffer_pos[-1 - buffer_dim0_offset]
+                               + 2 * cur_buffer_pos[-1 - 2 * buffer_dim0_offset]
+                               - cur_buffer_pos[-2]
+                               + 2 * cur_buffer_pos[-2 - buffer_dim0_offset]
+                               - cur_buffer_pos[-2 - 2 * buffer_dim0_offset];
                     }else{
-                        pred = cur_buffer_pos[-buffer_dim0_offset] + cur_buffer_pos[-buffer_dim1_offset] - cur_buffer_pos[- buffer_dim0_offset - buffer_dim1_offset];
+                        pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim0_offset] - cur_buffer_pos[- 1 - buffer_dim0_offset];
 
                     }
 					T diff = cur_data - pred;
