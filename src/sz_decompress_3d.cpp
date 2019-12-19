@@ -295,6 +295,7 @@ sz_decompress_3d_knl(const unsigned char * compressed, size_t r1, size_t r2, siz
 	free(unpred_data_buffer);
 	free(indicator);
 	free(reg_params);
+	free(reg_poly_params);
 	free(type);
 	return dec_data;
 }
