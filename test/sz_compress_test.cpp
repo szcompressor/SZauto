@@ -68,7 +68,7 @@ float compress(float *data, size_t num_elements, int r1, int r2, int r3, float p
              << endl;
         free(result_after_lossless);
         // writefile("dec_data.dat", dec_data, num_elements);
-        verify(data, dec_data, num_elements);
+        psnr = verify(data, dec_data, num_elements);
         free(result);
         free(dec_data);
     }
