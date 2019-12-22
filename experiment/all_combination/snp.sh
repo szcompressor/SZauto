@@ -7,5 +7,6 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=7-00:00:00
 
+chmod +x /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh snp-715x1115x366 snp 715 1115 366 &
 wait

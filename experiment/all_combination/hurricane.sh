@@ -6,6 +6,7 @@
 #SBATCH --ntasks=13
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=7-00:00:00 
+chmod +x /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh
 
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh hurricane-100x500x500 CLOUDf48.bin.dat 100 500 500 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh hurricane-100x500x500 PRECIPf48.bin.dat 100 500 500 &
