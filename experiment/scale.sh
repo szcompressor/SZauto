@@ -1,25 +1,23 @@
 #!/bin/bash
-#SBATCH --job-name=sz-qmc
+#SBATCH --job-name=sz-scale
 #SBATCH -p bdwall
 #SBATCH -A ECP-EZ
-#SBATCH --nodes 1
-#SBATCH --ntasks=1
+#SBATCH --nodes 12
+#SBATCH --ntasks=12
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=48:00:00
+#SBATCH --time=7-00:00:00
 
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-2 >qmc1e-2 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-3 >qmc1e-3 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-4 >qmc1e-4 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-5 >qmc1e-5 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-6 >qmc1e-6 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-7 >qmc1e-7 2>&1 &
-# srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-8 >qmc1e-8 2>&1 &
-#wait
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 PRES-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QI-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QV-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 U-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QC-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QR-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 RH-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 V-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QG-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 QS-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 T-98x1200x1200.dat 98 1200 1200 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh scale-98x1200x1200 W-98x1200x1200.dat 98 1200 1200 &
 
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-2 >scale1e-2 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-3 >scale1e-3 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-4 >scale1e-4 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-5 >scale1e-5 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-6 >scale1e-6 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-7 >scale1e-7 2>&1 &)
-(~/meta_compressor/build/bin/sz_test1 ~/data/6x98x1200x1200.f32.scale 588 1200 1200 1e-8 >scale1e-8 2>&1 &)
+wait
