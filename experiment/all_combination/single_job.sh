@@ -6,7 +6,7 @@ r1=$3
 r2=$4
 r3=$5
 
-cd ~/meta_compressor/experiment
+cd ~/meta_compressor/experiment/all_combination
 mkdir -p $run
 mkdir -p $run/$dataset
 for eb in 1E-2 5E-3 1E-3 5E-4 1E-4 5E-5 1E-5 1E-6 1E-7 1E-8
