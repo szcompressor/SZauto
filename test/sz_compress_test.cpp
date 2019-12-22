@@ -40,7 +40,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
     sz_params best_params_stage2;
     for (auto use_regression:{false, true}) {
         for (auto use_poly_regression:{false, true}) {
-            auto block_size_set = {5, 6, 7, 8, 9};
+            auto block_size_set = {5, 6, 7, 8, 9, 10};
             for (auto block_size:block_size_set) {
                 list<double> reg_eb_base_set = {0.1, 1, 2};
                 list<double> reg_eb_1_set = {1, block_size * 1.0};
@@ -83,8 +83,8 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
                                                 compress_info.regression_count * 100.0 / compress_info.block_count,
                                                 compress_info.regression2_count * 100.0 / compress_info.block_count
                                         );
-                                        fprintf(stderr, "stage:2, reb:%.1e, ratio: %.1f, compress_time:%.1f, %s\n", eb,
-                                                compress_info.ratio, compress_info.compress_time, buffer);
+                                        fprintf(stderr, "stage:2, reb:%.1e, ratio: %.1f, compress_time:%.1f, PSNR: %.1f, %s\n", eb,
+                                                compress_info.ratio, compress_info.compress_time, compress_info.psnr, buffer);
                                         if (compress_info.ratio > best_ratio) {
                                             best_ratio = compress_info.ratio;
                                             best_params_stage2 = params;
@@ -99,10 +99,29 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
             }
         }
     }
-    auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+
+    best_ratio = 0;
+    list<int> capacity_set = {0, 65536, 32768, 16384, 8192, 4096};
+    sz_params best_params_stage3;
+    for (auto capacity:capacity_set) {
+        best_params_stage2.capacity = capacity;
+        auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+        fprintf(stderr,
+                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+                eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
+                compress_info.ori_bytes,
+                compress_info.compress_bytes,
+                best_param_str);
+        if (compress_info.ratio > best_ratio) {
+            best_ratio = compress_info.ratio;
+            best_params_stage3 = best_params_stage2;
+        }
+    }
+    auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
-            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
-            eb, compress_info.ratio, compress_info.compress_time, compress_info.psnr, compress_info.nrmse,
+            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+            eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
+            compress_info.nrmse,
             compress_info.ori_bytes,
             compress_info.compress_bytes,
             best_param_str);

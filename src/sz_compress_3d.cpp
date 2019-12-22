@@ -599,12 +599,9 @@ sz_compress_3d_knl_2(const T * data, size_t r1, size_t r2, size_t r3, double pre
 	DSize_3d size(r1, r2, r3, params.block_size);
 	int capacity = 0; // num of quant intervals
 	meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
-	if(params.increase_quant_intv){
-		if(params.increase_quant_intv > 0) capacity <<= params.increase_quant_intv;
-		else capacity >>= -params.increase_quant_intv;
-	}
-	//TODO kai whether tun capacity?
-	capacity=65536;
+    if (params.capacity > 0) {
+        capacity = params.capacity;
+    }
 	int intv_radius = (capacity >> 1);
 	int * type = (int *) malloc(size.num_elements * sizeof(int));
 	int * indicator = (int *) malloc(size.num_blocks * sizeof(int));

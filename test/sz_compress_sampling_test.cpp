@@ -98,10 +98,28 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             }
         }
     }
-    auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+    best_ratio = 0;
+    list<int> capacity_set = {0, 65536, 32768, 16384, 8192, 4096};
+    sz_params best_params_stage3;
+    for (auto capacity:capacity_set) {
+        best_params_stage2.capacity = capacity;
+        auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+        fprintf(stderr,
+                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+                eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
+                compress_info.ori_bytes,
+                compress_info.compress_bytes,
+                best_param_str);
+        if (compress_info.ratio > best_ratio) {
+            best_ratio = compress_info.ratio;
+            best_params_stage3 = best_params_stage2;
+        }
+    }
+    auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
-            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
-            eb, compress_info.ratio, compress_info.compress_time, compress_info.psnr, compress_info.nrmse,
+            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+            eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
+            compress_info.nrmse,
             compress_info.ori_bytes,
             compress_info.compress_bytes,
             best_param_str);
@@ -114,7 +132,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
             baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
             baseline_compress_info.compress_bytes);
-
     return best_ratio;
 }
 
