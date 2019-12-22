@@ -32,6 +32,21 @@ using namespace std;
 #define Lorenze2LayerNoise2d 2.76
 #define Lorenze2LayerNoise3d 6.8
 
+struct sz_compress_info {
+    float compress_time;
+    float decompress_time;
+    double psnr;
+    double nrmse;
+    size_t ori_bytes;
+    size_t compress_bytes;
+    size_t lorenzo_count;
+    size_t lorenzo2_count;
+    size_t regression_count;
+    size_t regression2_count;
+    size_t block_count;
+    float ratio;
+};
+
 struct sz_params {
     bool block_independant;
     int block_size;
@@ -51,7 +66,9 @@ struct sz_params {
     float poly_regression_param_eb_poly;
 
     sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool url = true,
-              bool upr = false, float precision = 0.0, float prn = 0.0) :
+              bool upr = false, float precision = 0.0,
+              float reg_eb_base = RegErrThreshold, float reg_eb_1 = -1,
+              float poly_reg_eb_base = RegErrThreshold, float poly_reg_eb_1 = 5, float poly_reg_eb_2 = 20, float prn = 0.0) :
             block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
             use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(url), use_poly_regression(upr),
             poly_regression_noise(prn * precision) {
@@ -59,12 +76,38 @@ struct sz_params {
         if (use_lorenzo_2layer) {
             lorenzo_padding_layer = 2;
         }
-        regression_param_eb_independent = RegErrThreshold * precision / RegCoeffNum3d;
-        regression_param_eb_linear = RegErrThreshold * precision / RegCoeffNum3d / block_size;
-        poly_regression_param_eb_independent = RegErrThreshold * precision / 2;
-        poly_regression_param_eb_linear = RegErrThreshold * precision / RegPolyCoeffNum3d;
-        poly_regression_param_eb_poly = RegErrThreshold * precision / RegPolyCoeffNum3d / block_size;
+        if (reg_eb_1 == -1) {
+            reg_eb_1 = block_size;
+        }
+        regression_param_eb_linear = reg_eb_base * precision / RegCoeffNum3d / (float) block_size;
+        regression_param_eb_independent = reg_eb_1 * regression_param_eb_linear;
+
+        poly_regression_param_eb_poly = poly_reg_eb_base * reg_eb_base * precision / RegPolyCoeffNum3d / (float) block_size;
+        poly_regression_param_eb_linear = poly_reg_eb_1 * poly_regression_param_eb_poly;
+        poly_regression_param_eb_independent = poly_reg_eb_2 * poly_regression_param_eb_poly;
+
+//        regression_param_eb_independent = RegErrThreshold * precision / RegCoeffNum3d;
+//        regression_param_eb_linear = RegErrThreshold * precision / RegCoeffNum3d / block_size;
+//        poly_regression_param_eb_independent = RegErrThreshold * precision / 2;
+//        poly_regression_param_eb_linear = RegErrThreshold * precision / RegPolyCoeffNum3d;
+//        poly_regression_param_eb_poly = RegErrThreshold * precision / RegPolyCoeffNum3d / block_size;
     }
+
+//    void print(){
+//        std::cout << "Options: block_size = " << block_size << ", pred_dim = " << prediction_dim
+//             << ", lorenzo = " << use_lorenzo
+//             << ", lorenzo2 = " << use_lorenzo_2layer
+//             << ", regression = " << use_regression_linear
+//             << ", regression2 = " << use_poly_regression
+//             << endl
+//             << " reg_eb_base=" << reg_eb_base
+//             << ", reg_eb_1=" << reg_eb_1
+//             << ", poly_reg_eb_base=" << poly_reg_eb_base
+//             << ", poly_reg_eb_1=" << poly_reg_eb_1
+//             << ", poly_reg_eb_2=" << poly_reg_eb_2
+//             << ", poly_regression_noise=" << poly_regression_noise
+//             << endl;
+//    }
 };
 
 const sz_params default_params(false, false, false, 6, 3, 0);

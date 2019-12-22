@@ -49,7 +49,7 @@ void writefile(char *file, Type *data, size_t num_elements) {
 }
 
 template<typename Type>
-double verify(Type *ori_data, Type *data, size_t num_elements) {
+void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, double &nrmse) {
     size_t i = 0;
     Type Max = 0, Min = 0, diffMax = 0;
     Max = ori_data[0];
@@ -93,8 +93,8 @@ double verify(Type *ori_data, Type *data, size_t num_elements) {
 
     double mse = sum / num_elements;
     double range = Max - Min;
-    double psnr = 20 * log10(range) - 10 * log10(mse);
-    double nrmse = sqrt(mse) / range;
+    psnr = 20 * log10(range) - 10 * log10(mse);
+    nrmse = sqrt(mse) / range;
 
     printf("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
     printf("Max absolute error = %.10f\n", diffMax);
@@ -103,7 +103,13 @@ double verify(Type *ori_data, Type *data, size_t num_elements) {
     printf("PSNR = %f, NRMSE= %.20G\n", psnr, nrmse);
     printf("acEff=%f\n", acEff);
 
-    return psnr;
+}
+
+
+template<typename Type>
+void verify(Type *ori_data, Type *data, size_t num_elements) {
+    double psnr, nrmse;
+    verify(ori_data, data, num_elements, psnr, nrmse);
 }
 
 #endif

@@ -16,7 +16,11 @@
 # srun -N 1 -n 1 /home/kazhao/meta_compressor/build/bin/sz_test1 /home/kazhao/data/288x115x69x69.f32.qmc 33120 69 69 1e-8 >qmc1e-8 2>&1 &
 #wait
 
-
-(~/meta_compressor/build/bin/sz_test1 ~/data/127x1536x3072.f32.vgrd.noaa 127 1536 3072 1e-2 >noaa1e-2 2>&1 &)
-
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-2 >qmc1e-2 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-3 >qmc1e-3 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-4 >qmc1e-4 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-5 >qmc1e-5 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-6 >qmc1e-6 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-7 >qmc1e-7 2>&1 &)
+(~/meta_compressor/build/bin/sz_test1 ~/data/288x115x69x69.f32.qmc 33120 69 69 1e-8 >qmc1e-8 2>&1 &)
 

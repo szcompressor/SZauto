@@ -6,8 +6,7 @@
 #include "sz_compress_block_processing_knl.hpp"
 #include "sz_optimize_quant_intervals.hpp"
 #include "sz_regression_utils.hpp"
-
-// avoid mistake when running on KNL 
+// avoid mistake when running on KNL
 // need to be checked later;
 // also in sz_decompress_block_processing_knl.hpp
 float * ori_data_sp_float = NULL;
@@ -376,7 +375,8 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                             int *unpred_count_buffer, T *unpred_data_buffer,
                                                                             size_t offset, const sz_params &params,
                                                                             size_t & reg_count,
-                                                                            size_t & reg_poly_count) {
+                                                                            size_t & reg_poly_count,
+                                                                            sz_compress_info &compress_info) {
     reg_count = 0;
     reg_poly_count = 0;
     size_t lorenzo_count=0;
@@ -521,6 +521,11 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
 
 	printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
            lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
+	compress_info.lorenzo_count=lorenzo_count;
+	compress_info.lorenzo2_count=lorenzo_2layer_count;
+	compress_info.regression_count=reg_count;
+	compress_info.regression2_count=reg_poly_count;
+    compress_info.block_count = size.num_blocks;
 
 //	printf(" #block: %d  #regression %ld #poly %ld", size.num_blocks, reg_count, reg_poly_count);
 }
@@ -578,7 +583,18 @@ sz_compress_3d<float>(const float * data, size_t r1, size_t r2, size_t r3, doubl
 // perform compression
 template<typename T>
 unsigned char *
-sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params){
+sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params) {
+    sz_compress_info compress_info;
+    return sz_compress_3d_knl_2<T>(data, r1, r2, r3, precision, compressed_size, params, compress_info);
+}
+template
+unsigned char *
+sz_compress_3d_knl<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params);
+
+
+template<typename T>
+unsigned char *
+sz_compress_3d_knl_2(const T * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params, sz_compress_info &compress_info){
 	ori_data_sp_float = (float *) data;
 	DSize_3d size(r1, r2, r3, params.block_size);
 	int capacity = 0; // num of quant intervals
@@ -615,7 +631,7 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
                                                                                 reg_poly_unpredictable_data_pos,
                                                                                 unpred_count_buffer, unpred_data_buffer,
                                                                                 est_unpred_count_per_index, params, reg_count,
-                                                                                reg_poly_count);
+                                                                                reg_poly_count, compress_info);
 	unsigned char * compressed = NULL;
 	// TODO: change to a better estimated size
 	size_t est_size = size.num_elements*sizeof(T)*1.2;
@@ -666,6 +682,5 @@ sz_compress_3d_knl(const T * data, size_t r1, size_t r2, size_t r3, double preci
 
 template
 unsigned char *
-sz_compress_3d_knl<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params);
-
+sz_compress_3d_knl_2<float>(const float * data, size_t r1, size_t r2, size_t r3, double precision, size_t& compressed_size, const sz_params& params, sz_compress_info &compress_info);
 
