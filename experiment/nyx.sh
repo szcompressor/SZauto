@@ -7,6 +7,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=7-00:00:00
 
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job2.sh nyx-512x512x512 velocity_y.dat 512 512 512 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh nyx-512x512x512 baryon_density.dat 512 512 512 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh nyx-512x512x512 temperature.dat 512 512 512 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/single_job.sh nyx-512x512x512 velocity_y.dat 512 512 512 &
