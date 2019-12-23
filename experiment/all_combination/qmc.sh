@@ -9,5 +9,5 @@
 
 chmod +x /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh
 
-srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh qmc-288x115x69x69 einspline_288_115_69_69.pre.f32.dat 33120 69 69 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/all_combination/single_job.sh qmcpack-288x115x69x69 einspline_288_115_69_69.pre.f32.dat 33120 69 69 &
 wait

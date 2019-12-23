@@ -47,7 +47,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
                 list<double> poly_reg_eb_base_set = {0.1, 1};
                 list<double> poly_reg_eb_1_set = {0, 1, 5, 10};
                 list<double> poly_reg_eb_2_set = {0, 20};
-                list<double> poly_noise_set = {0, 0.1, 1};
+                list<double> poly_noise_set = {0, 0.01, 0.1, 1, 10, 100};
                 if (!use_regression) {
                     reg_eb_base_set = {0};
                     reg_eb_1_set = {0};
