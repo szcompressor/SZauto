@@ -3,11 +3,16 @@
 
 using namespace std;
 
-float test_top_candidates_param_compress(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision) {
+float test_top_candidates_param_compress(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision,
+                                         float sample_ratio = 0.01) {
 
     float best_ratio = 0;
     char best_param_str[1000];
     char buffer[1000];
+
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
+    int sample_num=0;
 
     sz_params best_params_stage1;
     for (auto use_lorenzo:{true}) {
@@ -17,7 +22,9 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                 for (auto pred_dim: pred_dim_set) {
                     sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                      use_lorenzo_2layer, false, false, precision);
-                    auto compress_info = compress(data, num_elements, r1, r2, r3, precision, params, false);
+                    params.sample_ratio = sample_ratio;
+                    auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params, false);
+                    sample_num++;
 
                     sprintf(buffer,
                             "stage:1, ratio: %.1f, reb:%.1e, compress_time:%.1f, PSNR= %.1f, lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
@@ -37,7 +44,8 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     best_ratio = 0;
     sz_params best_params_stage2;
-    for (auto use_regression:{false, true}) {
+//    for (auto use_regression:{false, true}) {
+    for (auto use_regression:{true}) {
         for (auto use_poly_regression:{false, true}) {
             auto block_size_set = {5, 6, 7, 8, 9};
 //            auto block_size_set = {5};
@@ -69,7 +77,11 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                                          best_params_stage1.use_lorenzo_2layer,
                                                          use_regression, use_poly_regression, precision, reg_eb_base, reg_eb_1,
                                                          poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
-                                        auto compress_info = compress(data, num_elements, r1, r2, r3, precision, params, false);
+                                        params.sample_ratio = sample_ratio;
+                                        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params,
+                                                                               false);
+                                        sample_num++;
+
                                         sprintf(buffer,
                                                 "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
                                                 "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise %.3f, "
@@ -100,11 +112,13 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
         }
     }
     best_ratio = 0;
-    list<int> capacity_set = {0, 65536, 32768, 16384, 8192, 4096};
+//    list<int> capacity_set = {0, 65536, 4096};
+    list<int> capacity_set = {0};
     sz_params best_params_stage3;
     for (auto capacity:capacity_set) {
         best_params_stage2.capacity = capacity;
-        auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+        sample_num++;
         fprintf(stderr,
                 "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
                 eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
@@ -116,23 +130,24 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             best_params_stage3 = best_params_stage2;
         }
     }
+
+    clock_gettime(CLOCK_REALTIME, &end);
+    float sample_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
     auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
-            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
-            compress_info.nrmse,
-            compress_info.ori_bytes,
-            compress_info.compress_bytes,
+            compress_info.nrmse, sample_time, sample_num,
             best_param_str);
 
 
-    sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-    auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
-    fprintf(stderr,
-            "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
-            eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
-            baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
-            baseline_compress_info.compress_bytes);
+//    sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
+//    auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
+//    fprintf(stderr,
+//            "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
+//            eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
+//            baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
+//            baseline_compress_info.compress_bytes);
     return best_ratio;
 }
 
@@ -156,6 +171,9 @@ int main(int argc, char **argv) {
         free(data);
         return 0;
     }
+    float sample_ratio = atof(argv[6]);
+    test_top_candidates_param_compress(data, num_elements, r1, r2, r3, eb, eb * (max - min), sample_ratio);
+
     free(data);
     return 0;
 

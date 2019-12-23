@@ -58,4 +58,31 @@ sz_compress_info compress(float *data, size_t num_elements, int r1, int r2, int 
     return compressInfo;
 }
 
+sz_compress_info compress_sampling(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                          sz_params params, bool use_decompress) {
+    size_t result_size = 0;
+    sz_compress_info compressInfo;
+
+    struct timespec start, end;
+    int err = 0;
+    err = clock_gettime(CLOCK_REALTIME, &start);
+
+    unsigned char *result = sz_compress_3d_sampling<float>(data, r1, r2, r3, precision, result_size, params, compressInfo);
+    unsigned char *result_after_lossless = NULL;
+    size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
+    err = clock_gettime(CLOCK_REALTIME, &end);
+    compressInfo.compress_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
+    cout << "Compression time: " << compressInfo.compress_time << "s" << endl;
+
+    float ratio = (num_elements * sizeof(float)) * 1.0 / lossless_outsize;
+    compressInfo.ori_bytes = num_elements * sizeof(float);
+    compressInfo.compress_bytes = lossless_outsize;
+    compressInfo.ratio = compressInfo.ori_bytes * 1.0 / compressInfo.compress_bytes;
+    cout << "Compressed size = " << lossless_outsize << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!!! ratio  !!!!!!!!!!!!!= " << ratio << endl;
+
+    free(result);
+
+    return compressInfo;
+}
 #endif //SZ_SZ_COMPRESS_UTIL_H
