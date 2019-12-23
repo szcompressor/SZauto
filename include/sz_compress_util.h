@@ -82,6 +82,7 @@ sz_compress_info compress_sampling(float *data, size_t num_elements, int r1, int
     cout << "!!!!!!!!!!!!!!!!!!!!! ratio  !!!!!!!!!!!!!= " << ratio << endl;
 
     free(result);
+    free(result_after_lossless);
 
     return compressInfo;
 }
