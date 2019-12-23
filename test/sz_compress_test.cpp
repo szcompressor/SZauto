@@ -107,7 +107,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
         best_params_stage2.capacity = capacity;
         auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         fprintf(stderr,
-                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
                 eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
                 compress_info.ori_bytes,
                 compress_info.compress_bytes,
@@ -119,7 +119,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
     }
     auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
-            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld, %s\n",
+            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
             compress_info.nrmse,
             compress_info.ori_bytes,
@@ -130,7 +130,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
     sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
     auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
     fprintf(stderr,
-            "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10f Ori_bytes %ld, Compressed_bytes %ld\n",
+            "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
             eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
             baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
             baseline_compress_info.compress_bytes);
