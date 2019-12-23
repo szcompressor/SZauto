@@ -369,6 +369,8 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
         size.num_blocks = num_sample_blocks;
         printf("sample_ratio = %.4f, num_blocks = %d %d %d\n", sample_ratio, tmp_nx, tmp_ny, tmp_nz);
         printf("num_elements = %ld, num_blocks = %ld\n", size.num_elements, size.num_blocks);
+        compress_info.ori_bytes = size.num_elements * sizeof(float);
+
         fflush(stdout);
 
         // maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
