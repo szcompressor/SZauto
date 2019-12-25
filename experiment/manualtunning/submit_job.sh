@@ -6,6 +6,6 @@ sbatch ../hurricane.sh
 sbatch ../miranda.sh
 sbatch ../noaa.sh
 sbatch ../nyx.sh
-sbatch ../qmc.sh
+sbatch ../qmcpack.sh
 sbatch ../scale.sh
 sbatch ../snp.sh
