@@ -29,6 +29,6 @@ srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack6k-6192x115x69x69 s5700l300.dat   34500 69 69 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack6k-6192x115x69x69 s600l300.dat   34500 69 69 &
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack6k-6192x115x69x69 s900l300.dat   34500 69 69 &
-srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack6k-6192x115x69x69 s6000l192.dat   22080 69 69 &
+#srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack6k-6192x115x69x69 s6000l192.dat   22080 69 69 &
 
 wait
