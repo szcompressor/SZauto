@@ -59,7 +59,7 @@ sz_compress_info compress(float *data, size_t num_elements, int r1, int r2, int 
 }
 
 sz_compress_info compress_sampling(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
-                          sz_params params, bool use_decompress) {
+                                   sz_params params, bool use_decompress) {
     size_t result_size = 0;
     sz_compress_info compressInfo;
 
@@ -68,20 +68,25 @@ sz_compress_info compress_sampling(float *data, size_t num_elements, int r1, int
     err = clock_gettime(CLOCK_REALTIME, &start);
 
     unsigned char *result = sz_compress_3d_sampling<float>(data, r1, r2, r3, precision, result_size, params, compressInfo);
-    unsigned char *result_after_lossless = NULL;
-    size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
+    if (params.lossless) {
+        unsigned char *result_after_lossless = NULL;
+        size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
+        compressInfo.compress_bytes = lossless_outsize;
+        free(result_after_lossless);
+    } else {
+        compressInfo.compress_bytes = result_size;
+    }
     err = clock_gettime(CLOCK_REALTIME, &end);
     compressInfo.compress_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
-    cout << "Compression time: " << compressInfo.compress_time << "s" << endl;
+//    cout << "Compression time: " << std::setw(10) << std::setprecision(6) << compressInfo.compress_time << "s" << endl;
 
-    compressInfo.compress_bytes = lossless_outsize;
     compressInfo.ratio = compressInfo.ori_bytes * 1.0 / compressInfo.compress_bytes;
-    cout << "Compressed size = " << lossless_outsize << endl;
-    cout << "!!!!!!!!!!!!!!!!!!!!! ratio  !!!!!!!!!!!!!= " << compressInfo.ratio << endl;
+//    cout << "Compressed size = " << compressInfo.compress_bytes << endl;
+//    cout << "!!!!!!!!!!!!!!!!!!!!! ratio  !!!!!!!!!!!!!= " << compressInfo.ratio << endl;
 
     free(result);
-    free(result_after_lossless);
 
     return compressInfo;
 }
+
 #endif //SZ_SZ_COMPRESS_UTIL_H

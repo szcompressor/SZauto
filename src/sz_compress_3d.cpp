@@ -339,9 +339,6 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     else if (params.prediction_dim == 1) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_1d_pred<T>;
     T recip_precision = (T) 1.0 / precision;
 
-
-    printf("START pred & quantize\n");
-
     // maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
     // 2-layer lorenzo
     size_t buffer_dim0_offset =
@@ -458,11 +455,9 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     free(pred_buffer);
     free(reg_params);
     free(reg_poly_params);
-    printf("num_type = %ld\n", type_pos - type);
-    printf("END pred & quantize\n");
-    fflush(stdout);
-    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
-           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
+//    printf("num_type = %ld\n", type_pos - type);
+//    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
+//           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
     compress_info.lorenzo_count = lorenzo_count;
     compress_info.lorenzo2_count = lorenzo_2layer_count;
     compress_info.regression_count = reg_count;
@@ -823,12 +818,9 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
                         const sz_params &params, sz_compress_info &compress_info) {
     ori_data_sp_float = (float *) data;
     DSize_3d size(r1, r2, r3, params.block_size);
-    int capacity = 0; // num of quant intervals
-    meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
-    if (params.capacity > 0) {
-        capacity = params.capacity;
-    }
-
+    int capacity = params.capacity;; // num of quant intervals
+//    meanInfo<T> mean_info = optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
+    meanInfo<T> mean_info;
     {
         size_t r1 = size.d1 - params.lorenzo_padding_layer;
         size_t r2 = size.d2 - params.lorenzo_padding_layer;
@@ -853,8 +845,8 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
         // modify size
         size.num_elements = num_sample_blocks * block_size * block_size * block_size;
         size.num_blocks = num_sample_blocks;
-        printf("sample_ratio = %.4f, num_blocks = %d %d %d\n", sample_ratio, size.sample_nx, size.sample_ny, size.sample_nz);
-        printf("num_elements = %ld, num_blocks = %ld\n", size.num_elements, size.num_blocks);
+//        printf("sample_ratio = %.4f, num_blocks = %d %d %d\n", sample_ratio, size.sample_nx, size.sample_ny, size.sample_nz);
+//        printf("num_elements = %ld, num_blocks = %ld\n", size.num_elements, size.num_blocks);
         compress_info.ori_bytes = size.num_elements * sizeof(float);
     }
 
@@ -927,7 +919,7 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
 
 
     Huffman_encode_tree_and_data(2 * capacity, type, size.num_elements, compressed_pos);
-    printf("%ld %ld\n ", compressed_pos - compressed, size.num_elements * sizeof(T));
+//    printf("%ld %ld\n ", compressed_pos - compressed, size.num_elements * sizeof(T));
 
 
     compressed_size = compressed_pos - compressed;

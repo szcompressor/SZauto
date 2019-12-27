@@ -65,15 +65,16 @@ struct sz_params {
     float poly_regression_param_eb_linear;
     float poly_regression_param_eb_poly;
     float sample_ratio;
+    bool lossless;
 
     sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool url = true,
               bool upr = false, float precision = 0.0,
               float reg_eb_base = RegErrThreshold, float reg_eb_1 = -1,
               float poly_reg_eb_base = RegErrThreshold, float poly_reg_eb_1 = 5, float poly_reg_eb_2 = 20, float prn = 0.0, int cp=0,
-              float sr=1.0) :
+              float sr=1.0, bool ll=true) :
             block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
             use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(url), use_poly_regression(upr),
-            poly_regression_noise(prn * precision), capacity(cp), sample_ratio(sr) {
+            poly_regression_noise(prn * precision), capacity(cp), sample_ratio(sr), lossless(ll) {
         lorenzo_padding_layer = 1;
         if (use_lorenzo_2layer) {
             lorenzo_padding_layer = 2;
