@@ -46,18 +46,12 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     }
 
     best_ratio = 0;
-    auto block_size_set = {5, 6, 7, 8, 9};
+    auto block_size_set = {5, 6, 10};
     for (auto block_size:block_size_set) {
-        list<double> reg_eb_base_set = {1};
-        list<double> reg_eb_1_set = {block_size * 1.0};
-        list<double> poly_reg_eb_base_set = {0.1};
-        list<double> poly_reg_eb_1_set = {5};
-        list<double> poly_reg_eb_2_set = {20};
-        list<double> poly_noise_set = {0};
         sz_params params(false, block_size, best_params_stage1.prediction_dim, 0,
                          best_params_stage1.use_lorenzo,
                          best_params_stage1.use_lorenzo_2layer,
-                         true, false, precision, 1, block_size * 1.0,
+                         true, true, precision, 1, block_size * 1.0,
                          0.1, 5, 20, 0);
         params.sample_ratio = sample_ratio;
         params.capacity = 65536;
@@ -71,7 +65,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                 "lorenzo: %.0f, lorenzo2: %.0f, regression:%.0f, regression2:%.0f,",
                 best_params_stage1.use_lorenzo, best_params_stage1.use_lorenzo_2layer,
                 true, false,
-                block_size, best_params_stage1.prediction_dim, 1.0, block_size*1.0,
+                block_size, best_params_stage1.prediction_dim, 1.0, block_size * 1.0,
                 0.1, 5.0, 20.0, 0.0,
                 compress_info.lorenzo_count * 100.0 / compress_info.block_count,
                 compress_info.lorenzo2_count * 100.0 / compress_info.block_count,
