@@ -18,7 +18,8 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     sz_params best_params_stage1;
     for (auto use_lorenzo:{true}) {
-        for (auto use_lorenzo_2layer:{false, true}) {
+//        for (auto use_lorenzo_2layer:{false, true}) {
+        for (auto use_lorenzo_2layer:{true}) {
             if (use_lorenzo || use_lorenzo_2layer) {
                 auto pred_dim_set = {2, 3};
                 for (auto pred_dim: pred_dim_set) {
@@ -46,7 +47,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     }
 
     best_ratio = 0;
-    auto block_size_set = {5, 6, 10};
+    auto block_size_set = {5, 6, 7, 8, 9, 10};
     for (auto block_size:block_size_set) {
         sz_params params(false, block_size, best_params_stage1.prediction_dim, 0,
                          best_params_stage1.use_lorenzo,
@@ -87,10 +88,12 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     best_ratio = 0;
     sz_params best_params_stage2;
-//    for (auto use_regression:{false, true}) {
-    for (auto use_regression:{true}) {
-//        for (auto use_poly_regression:{false, true}) {
-        for (auto use_poly_regression:{true}) {
+    for (auto use_regression:{false, true}) {
+        auto use_poly_regression_set = {false, true};
+        if (!use_regression) {
+            use_poly_regression_set = {false};
+        }
+        for (auto use_poly_regression:use_poly_regression_set) {
 //            auto block_size_set = {5, 6, 7, 8, 9};
             auto block_size_set = {best_params_stage1.block_size};
             for (auto block_size:block_size_set) {
