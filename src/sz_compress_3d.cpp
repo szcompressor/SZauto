@@ -918,8 +918,9 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
     }
 
 
+//    auto compressed_pos1 = compressed_pos;
     Huffman_encode_tree_and_data(2 * capacity, type, size.num_elements, compressed_pos);
-//    printf("%ld %ld\n ", compressed_pos - compressed, size.num_elements * sizeof(T));
+//    printf("after huffman %ld before huffman%ld\n ", compressed_pos - compressed_pos1, size.num_elements * sizeof(T));
 
 
     compressed_size = compressed_pos - compressed;
