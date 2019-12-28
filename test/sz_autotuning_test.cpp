@@ -24,6 +24,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     {
         for (auto use_lorenzo:{true}) {
             for (auto use_lorenzo_2layer:{true, false}) {
+                //TODO kai
 //            for (auto use_lorenzo_2layer:{true}) {
                 if (use_lorenzo || use_lorenzo_2layer) {
                     list<int> pred_dim_set = {3, 2};
@@ -58,7 +59,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     {
         list<int> block_size_set = {5, 6, 7, 8};
-//        list<bool> regression_set = {false, true};
         list<bool> regression_set = {true};
         list<bool> poly_regression_set = {false, true};
         for (auto use_regression:regression_set) {
@@ -158,10 +158,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
             compress_info.nrmse, sample_time, sample_num,
             best_param_str);
-//
-//    printf("%d %d %d %d %d\n", best_params_stage3.use_lorenzo, best_params_stage3.use_lorenzo_2layer,
-//           best_params_stage3.use_regression_linear, best_params_stage3.use_poly_regression,
-//           best_params_stage3.block_size, best_params_stage3.prediction_dim);
 
     sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
     auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
