@@ -6,7 +6,7 @@
 using namespace std;
 
 float test_top_candidates_param_compress(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision,
-                                         float sample_ratio = 0.01) {
+                                         float sample_ratio = 0.1) {
 
     char best_param_str[1000];
     char buffer[1000];
