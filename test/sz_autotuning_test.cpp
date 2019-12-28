@@ -23,7 +23,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             for (auto use_lorenzo_2layer:{false, true}) {
 //        for (auto use_lorenzo_2layer:{true}) {
                 if (use_lorenzo || use_lorenzo_2layer) {
-                    auto pred_dim_set = {2, 3};
+                    list<int> pred_dim_set = {2, 3};
                     for (auto pred_dim: pred_dim_set) {
                         sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                          use_lorenzo_2layer, false, false, precision);
@@ -48,7 +48,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             }
         }
 
-        auto block_size_set = {5, 6, 7, 8, 9, 10};
+        list<int> block_size_set = {5, 6, 7, 8, 9, 10};
         for (auto block_size:block_size_set) {
             sz_params params(false, block_size, best_params_stage1.prediction_dim, 0,
                              best_params_stage1.use_lorenzo,
@@ -91,9 +91,9 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     sz_params best_params_stage2;
 
     {
-        auto block_size_set = {best_params_stage1.block_size};
-        auto regression_set = {true};
-        auto poly_regression_set = {false, true};
+        list<int> block_size_set = {best_params_stage1.block_size};
+        list<bool> regression_set = {true};
+        list<bool> poly_regression_set = {false, true};
         if (!best_params_stage1.use_poly_regression && !best_params_stage1.use_regression_linear) {
             block_size_set = {6, 8};
             regression_set = {false};
