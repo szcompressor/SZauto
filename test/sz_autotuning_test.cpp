@@ -21,13 +21,12 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     float best_ratio = 0;
     sz_params best_params_stage1;
-    sz_params best_params;
     {
         for (auto use_lorenzo:{true}) {
-//            for (auto use_lorenzo_2layer:{false, true}) {
-        for (auto use_lorenzo_2layer:{true}) {
+            for (auto use_lorenzo_2layer:{true, false}) {
+//            for (auto use_lorenzo_2layer:{true}) {
                 if (use_lorenzo || use_lorenzo_2layer) {
-                    list<int> pred_dim_set = {2, 3};
+                    list<int> pred_dim_set = {3, 2};
                     for (auto pred_dim: pred_dim_set) {
                         sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                          use_lorenzo_2layer, false, false, precision);
@@ -44,7 +43,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                         if (compress_info.ratio > best_ratio * 1.02) {
                             best_ratio = compress_info.ratio;
                             best_params_stage1 = params;
-                            best_params = params;
                             memcpy(best_param_str, buffer, 1000 * sizeof(char));
                         }
                     }
@@ -56,14 +54,18 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     }
 
 
-    sz_params best_params_stage2;
+    sz_params best_params_stage2 = best_params_stage1;
 
     {
         list<int> block_size_set = {5, 6, 7, 8};
+//        list<bool> regression_set = {false, true};
         list<bool> regression_set = {true};
         list<bool> poly_regression_set = {false, true};
         for (auto use_regression:regression_set) {
             for (auto use_poly_regression:poly_regression_set) {
+                if (!use_regression && !use_poly_regression) {
+                    continue;
+                }
                 for (auto block_size:block_size_set) {
                     list<double> reg_eb_base_set = {1};
                     list<double> reg_eb_1_set = {block_size * 1.0};
@@ -118,7 +120,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                             if (compress_info.ratio > best_ratio * 1.01) {
                                                 best_ratio = compress_info.ratio;
                                                 best_params_stage2 = params;
-                                                best_params = params;
                                                 memcpy(best_param_str, buffer, 1000 * sizeof(char));
                                             }
                                         }
@@ -132,22 +133,20 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
         }
     }
 
+    best_ratio = 0;
     sz_params best_params_stage3;
     list<int> capacity_set = {capacity, 65536, 4096};
     for (auto capacity1:capacity_set) {
-        best_params.sample_ratio = sample_ratio * 5;
-        best_params.capacity = capacity1;
-        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params, true);
+        best_params_stage2.sample_ratio = sample_ratio * 5;
+        best_params_stage2.capacity = capacity1;
+        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         sample_num++;
         fprintf(stderr,
-                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s",
-                eb, compress_info.ratio, compress_info.compress_time, capacity1, compress_info.psnr, compress_info.nrmse,
-                compress_info.ori_bytes,
-                compress_info.compress_bytes,
-                best_param_str);
+                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, %s",
+                eb, compress_info.ratio, compress_info.compress_time, capacity1, best_param_str);
         if (compress_info.ratio > best_ratio * 1.01) {
             best_ratio = compress_info.ratio;
-            best_params_stage3 = best_params;
+            best_params_stage3 = best_params_stage2;
         }
     }
 
@@ -159,7 +158,10 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
             compress_info.nrmse, sample_time, sample_num,
             best_param_str);
-
+//
+//    printf("%d %d %d %d %d\n", best_params_stage3.use_lorenzo, best_params_stage3.use_lorenzo_2layer,
+//           best_params_stage3.use_regression_linear, best_params_stage3.use_poly_regression,
+//           best_params_stage3.block_size, best_params_stage3.prediction_dim);
 
     sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
     auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
