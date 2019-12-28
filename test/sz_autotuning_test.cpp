@@ -33,6 +33,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                          use_lorenzo_2layer, false, false, precision);
                         params.sample_ratio = sample_ratio;
                         params.capacity = capacity;
+                        params.lossless = false;
                         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params, false);
                         sample_num++;
 
