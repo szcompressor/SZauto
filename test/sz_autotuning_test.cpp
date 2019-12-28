@@ -176,10 +176,10 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 //        capacity0 = 8192;
 //    }
 
-//    list<int> capacity_set = {0, 65536, 4096};
-    list<int> capacity_set = {capacity0};
+    list<int> capacity_set = {capacity0, 65536, 4096};
     sz_params best_params_stage3;
     for (auto capacity:capacity_set) {
+        best_params_stage2.sample_ratio = sample_ratio * 5;
         best_params_stage2.capacity = capacity;
         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         sample_num++;
