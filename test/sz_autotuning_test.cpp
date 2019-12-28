@@ -16,6 +16,9 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     clock_gettime(CLOCK_REALTIME, &start);
     int sample_num = 0;
 
+    int capacity = 8192;
+    optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
+    printf("tuning capacity: %d\n", capacity);
 
     sz_params best_params_stage1;
     {
@@ -28,8 +31,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                         sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                          use_lorenzo_2layer, false, false, precision);
                         params.sample_ratio = sample_ratio;
-                        params.capacity = 65536;
-//                    params.lossless = false;
+                        params.capacity = capacity;
                         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params, false);
                         sample_num++;
 
@@ -56,7 +58,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                              true, true, precision, 1, block_size * 1.0,
                              0.1, 5, 20, 0);
             params.sample_ratio = sample_ratio;
-            params.capacity = 65536;
+            params.capacity = capacity;
             auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params,
                                                    false);
             sample_num++;
@@ -131,7 +133,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                                              reg_eb_1,
                                                              poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
                                             params.sample_ratio = sample_ratio;
-                                            params.capacity = 65536;
+                                            params.capacity = capacity;
                                             auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision,
                                                                                    params,
                                                                                    false);
@@ -169,23 +171,18 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     }
 
     best_ratio = 0;
-    int capacity0 = 8192;
-    optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity0);
-    printf("tuning capacity: %d\n", capacity0);
-//    if (capacity0 > 65536) {
-//        capacity0 = 8192;
-//    }
 
-    list<int> capacity_set = {capacity0, 65536, 4096};
+
+    list<int> capacity_set = {capacity, 65536, 4096};
     sz_params best_params_stage3;
-    for (auto capacity:capacity_set) {
+    for (auto capacity1:capacity_set) {
         best_params_stage2.sample_ratio = sample_ratio * 5;
-        best_params_stage2.capacity = capacity;
+        best_params_stage2.capacity = capacity1;
         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         sample_num++;
         fprintf(stderr,
                 "stage:3, reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
-                eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
+                eb, compress_info.ratio, compress_info.compress_time, capacity1, compress_info.psnr, compress_info.nrmse,
                 compress_info.ori_bytes,
                 compress_info.compress_bytes,
                 best_param_str);
