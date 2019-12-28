@@ -112,7 +112,7 @@ float test_all_param_compress(float *data, size_t num_elements, int r1, int r2, 
     }
 
     best_ratio = 0;
-    list<int> capacity_set = {0, 65536, 16384, 4096, 1024, 256};
+    list<int> capacity_set = {0, 65536, 32768, 16384, 8192, 4096};
     sz_params best_params_stage3;
     for (auto capacity:capacity_set) {
         best_params_stage2.capacity = capacity;
