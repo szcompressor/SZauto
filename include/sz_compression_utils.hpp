@@ -76,9 +76,21 @@ compress_regression_coefficient_3d_v2(const int coeff_num, const T * precisions,
         prev_reg_params ++, reg_params_pos ++;
     }
 }
+template<typename T>
+inline void
+compress_regression_coefficient_3d_v3(const int coeff_num, const T * precisions, const T * recip_precisions, float * reg_params_pos, int * reg_params_type_pos, float *& reg_unpredictable_data_pos){
+    float * prev_reg_params = reg_params_pos - coeff_num;
+    for(int i=0; i<coeff_num; i++){
+        *(reg_params_type_pos ++) = quantize(*prev_reg_params, *reg_params_pos, precisions[i], recip_precisions[i], RegCoeffCapacity1, RegCoeffRadius1, reg_unpredictable_data_pos, reg_params_pos);
+        prev_reg_params ++, reg_params_pos ++;
+    }
+}
 
 void
 encode_regression_coefficients(const int * reg_params_type, const float * reg_unpredictable_data, size_t reg_count, size_t reg_unpredictable_count, unsigned char *& compressed_pos);
+
+void
+encode_regression_coefficients_v2(const int * reg_params_type, const float * reg_unpredictable_data, size_t reg_count, size_t reg_unpredictable_count, unsigned char *& compressed_pos);
 
 // copied from conf.c
 unsigned int 

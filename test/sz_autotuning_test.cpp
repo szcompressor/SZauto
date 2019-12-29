@@ -97,7 +97,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                                              use_regression, use_poly_regression, precision, reg_eb_base,
                                                              reg_eb_1,
                                                              poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
-                                            params.sample_ratio = sample_ratio * 2;
+                                            params.sample_ratio = sample_ratio * 1.2;
                                             params.capacity = capacity;
                                             auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision,
                                                                                    params,

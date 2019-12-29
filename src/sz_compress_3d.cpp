@@ -416,7 +416,7 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
                 if (selection_result == SELECTOR_REGRESSION_POLY) {
 
                     // poly regression
-                    compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
+                    compress_regression_coefficient_3d_v3(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
                                                           reg_poly_params_pos, reg_poly_params_type_pos,
                                                           reg_poly_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(cur_block_data_pos, reg_poly_params_pos, pred_buffer,
@@ -434,7 +434,7 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
                     reg_poly_params_type_pos += RegPolyCoeffNum3d;
                 } else if (selection_result == SELECTOR_REGRESSION) {
                     // regression
-                    compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
+                    compress_regression_coefficient_3d_v3(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
                                                           reg_params_type_pos,
                                                           reg_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(cur_block_data_pos, reg_params_pos, pred_buffer,
@@ -927,12 +927,12 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
 //	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);
 
     if (reg_count) {
-        encode_regression_coefficients(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
+        encode_regression_coefficients_v2(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
                                        reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
 
     }
     if (reg_poly_count) {
-        encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
+        encode_regression_coefficients_v2(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
 
     }

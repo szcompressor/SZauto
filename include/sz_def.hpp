@@ -25,7 +25,9 @@ using namespace std;
 #define RegErrThreshold 1
 #define PolyRegErrThreshold 0.1
 #define RegCoeffRadius 32768
+#define RegCoeffRadius1 8192
 #define RegCoeffCapacity 65536
+#define RegCoeffCapacity1 16384
 #define LorenzeNoise1d 0.5
 #define LorenzeNoise2d 0.81
 #define LorenzeNoise3d 1.22
