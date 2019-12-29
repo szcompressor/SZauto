@@ -360,9 +360,9 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
             for (size_t iz = 0; iz < size.sample_nz; iz++) {
                 // extract data
                 const T *cur_block_data_pos =
-                        data_pos + ix * size.sample_distance * size.block_size * r2 * r3 +
-                        iy * size.sample_distance * size.block_size * r3 +
-                        iz * size.sample_distance * size.block_size;
+                        data_pos + ix * (size.sample_distance + size.block_size) * r2 * r3 +
+                        iy * (size.sample_distance + size.block_size) * r3 +
+                        iz * (size.sample_distance + size.block_size);
                 for (int ii = 0; ii < size.block_size + params.lorenzo_padding_layer; ii++) {
                     for (int jj = 0; jj < size.block_size + params.lorenzo_padding_layer; jj++) {
                         memcpy(pred_buffer + ii * buffer_dim0_offset + jj * buffer_dim1_offset,
@@ -834,9 +834,9 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
         size.sample_nx = num_x, size.sample_ny = num_y, size.sample_nz = num_z;
         while (sample_ratio > params.sample_ratio) {
             size.sample_distance++;
-            size.sample_nx = (num_x - 1) / size.sample_distance + 1;
-            size.sample_ny = (num_y - 1) / size.sample_distance + 1;
-            size.sample_nz = (num_z - 1) / size.sample_distance + 1;
+            size.sample_nx = r1 / (size.sample_distance + block_size);
+            size.sample_ny = r2 / (size.sample_distance + block_size);
+            size.sample_nz = r3 / (size.sample_distance + block_size);
             sample_ratio = size.sample_nx * size.sample_ny * size.sample_nz * 1.0 / (num_x * num_y * num_z);
             if ((size.sample_nx == 1) && (size.sample_ny == 1) && (size.sample_nz == 1)) break;
         }

@@ -6,7 +6,7 @@
 using namespace std;
 
 float test_top_candidates_param_compress(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision,
-                                         float sample_ratio = 0.1) {
+                                         float sample_ratio = 0.05) {
 
     char best_param_str[1000];
     char buffer[1000];
@@ -31,7 +31,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                     for (auto pred_dim: pred_dim_set) {
                         sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                          use_lorenzo_2layer, false, false, precision);
-                        params.sample_ratio = sample_ratio;
+                        params.sample_ratio = sample_ratio * 2;
                         params.capacity = capacity;
                         params.lossless = false;
                         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params, false);
@@ -171,7 +171,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     sz_params best_params_stage3;
     list<int> capacity_set = {capacity, 65536, 4096};
     for (auto capacity1:capacity_set) {
-        best_params_stage2.sample_ratio = sample_ratio * 5;
+        best_params_stage2.sample_ratio = sample_ratio * 2;
         best_params_stage2.capacity = capacity1;
         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         sample_num++;
