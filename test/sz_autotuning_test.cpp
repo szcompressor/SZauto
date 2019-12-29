@@ -31,7 +31,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                     for (auto pred_dim: pred_dim_set) {
                         sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                          use_lorenzo_2layer, false, false, precision);
-                        params.sample_ratio = sample_ratio * 2;
+                        params.sample_ratio = sample_ratio * 1.2;
                         params.capacity = capacity;
                         params.lossless = false;
                         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, params, false);
@@ -97,7 +97,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                                                              use_regression, use_poly_regression, precision, reg_eb_base,
                                                              reg_eb_1,
                                                              poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
-                                            params.sample_ratio = sample_ratio;
+                                            params.sample_ratio = sample_ratio * 2;
                                             params.capacity = capacity;
                                             auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision,
                                                                                    params,
@@ -171,7 +171,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     sz_params best_params_stage3;
     list<int> capacity_set = {capacity, 65536, 4096};
     for (auto capacity1:capacity_set) {
-        best_params_stage2.sample_ratio = sample_ratio * 2;
+        best_params_stage2.sample_ratio = sample_ratio * 1.2;
         best_params_stage2.capacity = capacity1;
         auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
         sample_num++;

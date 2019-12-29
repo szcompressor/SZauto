@@ -6,6 +6,7 @@
 #include "sz_compress_block_processing_knl.hpp"
 #include "sz_optimize_quant_intervals.hpp"
 #include "sz_regression_utils.hpp"
+#include <random>
 
 // avoid mistake when running on KNL
 // need to be checked later;
@@ -347,9 +348,23 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     T *pred_buffer = (T *) malloc(
             (size.block_size + params.lorenzo_padding_layer) * (size.block_size + params.lorenzo_padding_layer) *
             (size.block_size + params.lorenzo_padding_layer) * sizeof(T));
+
     memset(pred_buffer, 0,
            (size.block_size + params.lorenzo_padding_layer) * (size.block_size + params.lorenzo_padding_layer) *
            (size.block_size + params.lorenzo_padding_layer) * sizeof(T));
+
+    T *random_buffer = (T *) malloc(
+            (size.block_size + params.lorenzo_padding_layer) * (size.block_size + params.lorenzo_padding_layer) *
+            (size.block_size + params.lorenzo_padding_layer) * sizeof(T));
+
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> dis(-precision, precision);
+    for (int i = 0; i < (size.block_size + params.lorenzo_padding_layer) * (size.block_size + params.lorenzo_padding_layer) *
+                          (size.block_size + params.lorenzo_padding_layer); i++) {
+        random_buffer[i]=dis(gen);
+    }
+
 
     size_t r1 = size.d1 - params.lorenzo_padding_layer;
     size_t r2 = size.d2 - params.lorenzo_padding_layer;
@@ -365,9 +380,11 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
                         iz * (size.sample_distance + size.block_size);
                 for (int ii = 0; ii < size.block_size + params.lorenzo_padding_layer; ii++) {
                     for (int jj = 0; jj < size.block_size + params.lorenzo_padding_layer; jj++) {
-                        memcpy(pred_buffer + ii * buffer_dim0_offset + jj * buffer_dim1_offset,
-                               cur_block_data_pos + ii * size.dim0_offset + jj * size.dim1_offset,
-                               (size.block_size + params.lorenzo_padding_layer) * sizeof(T));
+                        for (int kk = 0; kk < size.block_size + params.lorenzo_padding_layer; kk++) {
+                            pred_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk] =
+                                    cur_block_data_pos[ii * size.dim0_offset + jj * size.dim1_offset + kk] +
+                                    random_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk];
+                        }
                     }
                 }
                 cur_block_data_pos += params.lorenzo_padding_layer * (size.dim0_offset + size.dim1_offset + 1);
@@ -455,6 +472,7 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     free(pred_buffer);
     free(reg_params);
     free(reg_poly_params);
+    free(random_buffer);
 //    printf("num_type = %ld\n", type_pos - type);
 //    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
 //           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
@@ -842,11 +860,13 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
         }
         size_t num_sample_blocks = size.sample_nx * size.sample_ny * size.sample_nz;
         sample_ratio = num_sample_blocks * 1.0 / (num_x * num_y * num_z);
+
         // modify size
         size.num_elements = num_sample_blocks * block_size * block_size * block_size;
         size.num_blocks = num_sample_blocks;
 //        printf("sample_ratio = %.4f, num_blocks = %d %d %d\n", sample_ratio, size.sample_nx, size.sample_ny, size.sample_nz);
 //        printf("num_elements = %ld, num_blocks = %ld\n", size.num_elements, size.num_blocks);
+
         compress_info.ori_bytes = size.num_elements * sizeof(float);
     }
 

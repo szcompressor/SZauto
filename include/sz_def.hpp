@@ -22,7 +22,8 @@ using namespace std;
 #define SELECTOR_REGRESSION_POLY 3
 #define RegCoeffNum3d 4
 #define RegPolyCoeffNum3d 10
-#define RegErrThreshold 0.1
+#define RegErrThreshold 1
+#define PolyRegErrThreshold 0.1
 #define RegCoeffRadius 32768
 #define RegCoeffCapacity 65536
 #define LorenzeNoise1d 0.5
@@ -70,7 +71,7 @@ struct sz_params {
     sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool url = true,
               bool upr = false, float precision = 0.0,
               float reg_eb_base = RegErrThreshold, float reg_eb_1 = -1,
-              float poly_reg_eb_base = RegErrThreshold, float poly_reg_eb_1 = 5, float poly_reg_eb_2 = 20, float prn = 0.0, int cp=0,
+              float poly_reg_eb_base = PolyRegErrThreshold, float poly_reg_eb_1 = 5, float poly_reg_eb_2 = 20, float prn = 0.0, int cp=0,
               float sr=1.0, bool ll=true) :
             block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
             use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(url), use_poly_regression(upr),
