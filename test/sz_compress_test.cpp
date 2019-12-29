@@ -173,10 +173,10 @@ int main(int argc, char **argv) {
     }
 
     int block_size = atoi(argv[6]);
-    int stride = atoi(argv[7]);
-    int pred_dim = atoi(argv[8]);
-    int lorenzo_op = atoi(argv[9]);
-    int regression_op = atoi(argv[10]);
+    int pred_dim = atoi(argv[7]);
+    int lorenzo_op = atoi(argv[8]);
+    int regression_op = atoi(argv[9]);
+    int capacity = atoi(argv[10]);
 
     bool lorenzo = lorenzo_op == 1 || lorenzo_op == 3;
     bool lorenzo_2layer = lorenzo_op == 2 || lorenzo_op == 3;
@@ -190,9 +190,11 @@ int main(int argc, char **argv) {
              << ", lorenzo2 = " << lorenzo_2layer
              << ", regression = " << regression_linear
              << ", regression2 = " << regression_poly
+             << ", capacity = " << capacity
              << endl;
         sz_params params(false, block_size, pred_dim, 0, lorenzo, lorenzo_2layer,
                          regression_linear, regression_poly, precision);
+        params.capacity = capacity;
         compress(data, num_elements, r1, r2, r3, eb * (max - min), params, true);
         free(data);
         return 0;

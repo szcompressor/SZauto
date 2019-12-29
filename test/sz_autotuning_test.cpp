@@ -167,22 +167,24 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     }
 
-    best_ratio = 0;
-    sz_params best_params_stage3;
-    list<int> capacity_set = {capacity, 65536, 4096};
-    for (auto capacity1:capacity_set) {
-        best_params_stage2.sample_ratio = sample_ratio * 2;
-        best_params_stage2.capacity = capacity1;
-        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
-        sample_num++;
-        fprintf(stderr,
-                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, %s",
-                eb, compress_info.ratio, compress_info.compress_time, capacity1, best_param_str);
-        if (compress_info.ratio > best_ratio * 1.01) {
-            best_ratio = compress_info.ratio;
-            best_params_stage3 = best_params_stage2;
-        }
-    }
+//    best_ratio = 0;
+//    sz_params best_params_stage3;
+//    list<int> capacity_set = {capacity, 65536, 4096};
+//    for (auto capacity1:capacity_set) {
+//        best_params_stage2.sample_ratio = sample_ratio * 3;
+//        best_params_stage2.capacity = capacity1;
+//        auto compress_info = compress_sampling(data, num_elements, r1, r2, r3, precision, best_params_stage2, true);
+//        sample_num++;
+//        fprintf(stderr,
+//                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, %s",
+//                eb, compress_info.ratio, compress_info.compress_time, capacity1, best_param_str);
+//        if (compress_info.ratio > best_ratio * 1.01) {
+//            best_ratio = compress_info.ratio;
+//            best_params_stage3 = best_params_stage2;
+//        }
+//    }
+    sz_params best_params_stage3 = best_params_stage2;
+    best_params_stage3.capacity = capacity;
 
     clock_gettime(CLOCK_REALTIME, &end);
     float sample_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
