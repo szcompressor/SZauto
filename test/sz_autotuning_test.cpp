@@ -169,8 +169,8 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
 
     best_ratio = 0;
     sz_params best_params_stage3;
-    if (eb <= 1e-7) {
-        list<int> capacity_set = {capacity, 65536, 4096};
+    if (eb <= 1.1e-7) {
+        list<int> capacity_set = {capacity, 16384};
         for (auto capacity1:capacity_set) {
             best_params_stage2.sample_ratio = sample_ratio * 3;
             best_params_stage2.capacity = capacity1;
