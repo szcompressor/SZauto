@@ -40,7 +40,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
                         sprintf(buffer,
                                 "lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
                                 use_lorenzo, use_lorenzo_2layer, pred_dim);
-                        fprintf(stderr, "stage:1, ratio: %.2f, reb:%.1e, compress_time:%.3f, PSNR= %.1f, %s",
+                        fprintf(stderr, "stage:1, ratio: %.2f, reb:%.1e, compress_time:%.3f, PSNR:%.1f, %s",
                                 compress_info.ratio, eb, compress_info.compress_time, compress_info.psnr, buffer);
                         if (compress_info.ratio > best_ratio * 1.02) {
                             best_ratio = compress_info.ratio;
@@ -168,7 +168,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     }
 
     sz_params best_params_stage3;
-    if (eb < 1.1e-6 && best_ratio > 10) {
+    if (eb < 1.1e-6 && best_ratio > 7) {
         best_ratio = 0;
         list<int> capacity_set = {capacity, 16384};
         for (auto capacity1:capacity_set) {
@@ -194,7 +194,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     float sample_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
     auto compress_info = compress(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
-            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR %.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
+            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
             compress_info.nrmse, sample_time, sample_num,
             best_param_str);
@@ -202,7 +202,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
     auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
     fprintf(stderr,
-            "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
+            "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR:%.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
             eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
             baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
             baseline_compress_info.compress_bytes);
