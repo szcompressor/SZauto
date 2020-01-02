@@ -106,3 +106,14 @@ chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-6192x115x69x69 s5700l300.dat   34500 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-6192x115x69x69 s600l300.dat   34500 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-6192x115x69x69 s900l300.dat   34500 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 CLDICE_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 CLDLIQ_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 CLOUD_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 UU_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 U_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 VD01_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 VQ_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 VT_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 VU_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 VV_1_26_1800_3600.dat  26 1800 3600
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh cesm-26x1800x3600 V_1_26_1800_3600.dat  26 1800 3600

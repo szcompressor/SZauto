@@ -24,7 +24,7 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
     clock_gettime(CLOCK_REALTIME, &start);
     int sample_num = 0;
 
-    int capacity = 8192;
+    int capacity = 65536 * 2;
     optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
     printf("tuning capacity: %d\n", capacity);
 
