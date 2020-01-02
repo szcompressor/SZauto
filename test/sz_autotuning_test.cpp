@@ -7,6 +7,15 @@ using namespace std;
 
 float test_top_candidates_param_compress(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision,
                                          float sample_ratio = 0.05) {
+    {
+        sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
+        auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
+        fprintf(stderr,
+                "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR:%.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
+                eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
+                baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
+                baseline_compress_info.compress_bytes);
+    }
 
     char best_param_str[1000];
     char buffer[1000];
@@ -199,13 +208,6 @@ float test_top_candidates_param_compress(float *data, size_t num_elements, int r
             compress_info.nrmse, sample_time, sample_num,
             best_param_str);
 
-    sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-    auto baseline_compress_info = compress(data, num_elements, r1, r2, r3, precision, baseline_param, true);
-    fprintf(stderr,
-            "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR:%.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
-            eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
-            baseline_compress_info.nrmse, baseline_compress_info.ori_bytes,
-            baseline_compress_info.compress_bytes);
     return best_ratio;
 }
 
