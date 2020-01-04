@@ -313,9 +313,11 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
             best_params_stage2.capacity = capacity1;
             auto compress_info = do_compress_sampling<T>(data, num_elements, r1, r2, r3, precision, best_params_stage2);
             sample_num++;
-            fprintf(stdout,
-                    "stage:3, reb:%.1e, ratio:%.2f, compress_time:%.3f, capacity:%d, %s",
-                    relative_eb, compress_info.ratio, compress_info.compress_time, capacity1, best_param_str);
+            if (log) {
+                fprintf(stdout,
+                        "stage:3, reb:%.1e, ratio:%.2f, compress_time:%.3f, capacity:%d, %s",
+                        relative_eb, compress_info.ratio, compress_info.compress_time, capacity1, best_param_str);
+            }
             if (compress_info.ratio > best_ratio * 1.01) {
                 best_ratio = compress_info.ratio;
                 best_params_stage3 = best_params_stage2;
