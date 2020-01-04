@@ -30,12 +30,13 @@ int main(int argc, char **argv) {
     }
 
     unsigned char *compressed = sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size);
+    free(data);
+
     printf("FINAL: reb:%.1e, ratio %.2f\n", eb, r1 * r2 * r3 * sizeof(float) * 1.0 / compressed_size);
     auto *dec_data = sz_decompress_autotuning_3d<float>(compressed, compressed_size, r1, r2, r3);
     free(compressed);
     free(dec_data);
 
-    free(data);
     return 0;
 
 }

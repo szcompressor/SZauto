@@ -12,6 +12,9 @@
 int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize);
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes);
 unsigned long sz_lossless_decompress(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData, unsigned long targetOriSize);
+unsigned long sz_lossless_compress_v2(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes);
+unsigned long sz_lossless_decompress_v2(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData);
+
 unsigned long sz_lossless_decompress65536bytes(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData);
 
 #endif

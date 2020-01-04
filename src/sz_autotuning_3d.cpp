@@ -64,7 +64,7 @@ unsigned char *do_compress(T *data, size_t num_elements, int r1, int r2, int r3,
     sz_compress_info compressInfo;
     unsigned char *result = sz_compress_3d_knl_2<T>(data, r1, r2, r3, precision, sz_result_size, params, compressInfo);
     unsigned char *result_after_lossless = NULL;
-    compressed_size = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, sz_result_size, &result_after_lossless);
+    compressed_size = sz_lossless_compress_v2(ZSTD_COMPRESSOR, 3, result, sz_result_size, &result_after_lossless);
     free(result);
     return result_after_lossless;
 }
@@ -74,9 +74,7 @@ template<typename T>
 T *sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, int r1, int r2, int r3) {
 
     unsigned char *decompressed_lossless;
-    size_t lossless_upper_bound = r1 * r2 * r3 * 1.2;
-    size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, compressed, compress_size, &decompressed_lossless,
-                                                    lossless_upper_bound);
+    size_t lossless_output = sz_lossless_decompress_v2(ZSTD_COMPRESSOR, compressed, compress_size, &decompressed_lossless);
     T *dec_data = sz_decompress_3d_knl<T>(decompressed_lossless, r1, r2, r3);
     free(decompressed_lossless);
     return dec_data;

@@ -1,4 +1,6 @@
 #include "sz_lossless.hpp"
+#include "sz_compression_utils.hpp"
+#include "sz_decompression_utils.hpp"
 
 int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 {
@@ -10,12 +12,12 @@ int is_lossless_compressed_data(unsigned char* compressedBytes, size_t cmpSize)
 
 unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes)
 {
-	unsigned long outSize = 0; 
+	unsigned long outSize = 0;
 	size_t estimatedCompressedSize = 0;
 	switch(losslessCompressor)
 	{
 	case ZSTD_COMPRESSOR:
-		if(dataLength < 100) 
+		if(dataLength < 100)
 			estimatedCompressedSize = 200;
 		else
 			estimatedCompressedSize = dataLength*1.2;
@@ -24,6 +26,29 @@ unsigned long sz_lossless_compress(int losslessCompressor, int level, unsigned c
 		break;
 	default:
 		printf("Error: Unrecognized lossless compressor in sz_lossless_compress()\n");
+	}
+	return outSize;
+}
+
+unsigned long sz_lossless_compress_v2(int losslessCompressor, int level, unsigned char* data, unsigned long dataLength, unsigned char** compressBytes)
+{
+	unsigned long outSize = 0;
+	size_t estimatedCompressedSize = 0;
+	switch(losslessCompressor)
+	{
+		case ZSTD_COMPRESSOR:
+			if(dataLength < 100)
+				estimatedCompressedSize = 200;
+			else
+				estimatedCompressedSize = dataLength*1.2;
+
+			*compressBytes = (unsigned char*)malloc(estimatedCompressedSize);
+			unsigned char *compressBytesPos = *compressBytes;
+			write_variable_to_dst(compressBytesPos, dataLength);
+//			printf("%ld\n", dataLength);
+			outSize = ZSTD_compress(compressBytesPos, estimatedCompressedSize, data, dataLength,
+									level); //default setting of level is 3
+			break;
 	}
 	return outSize;
 }
@@ -42,6 +67,17 @@ unsigned long sz_lossless_decompress(int losslessCompressor, unsigned char* comp
 		printf("Error: Unrecognized lossless compressor in sz_lossless_decompress()\n");
 	}
 	return outSize;
+}
+
+unsigned long sz_lossless_decompress_v2(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData)
+{
+	unsigned long dataLength = 0;
+	const unsigned char *compressBytesPos = compressBytes;
+	read_variable_from_src(compressBytesPos, dataLength);
+//	printf("%ld\n", dataLength);
+	*oriData = (unsigned char *) malloc(dataLength);
+	ZSTD_decompress(*oriData, dataLength, compressBytesPos, cmpSize);
+	return dataLength;
 }
 
 unsigned long sz_lossless_decompress65536bytes(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData)
