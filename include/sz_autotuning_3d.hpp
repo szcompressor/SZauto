@@ -7,7 +7,7 @@
 template<typename T>
 unsigned char *
 sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
-                          bool baseline = false, bool decompress = false, float sample_ratio = 0.05);
+                          bool baseline = false, bool decompress = false, bool log = false, float sample_ratio = 0.05);
 
 template<typename T>
 T *

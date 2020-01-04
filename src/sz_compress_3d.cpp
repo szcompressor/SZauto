@@ -651,8 +651,8 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
     free(reg_params);
     free(reg_poly_params);
 
-    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
-           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
+//    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
+//           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
     compress_info.lorenzo_count = lorenzo_count;
     compress_info.lorenzo2_count = lorenzo_2layer_count;
     compress_info.regression_count = reg_count;

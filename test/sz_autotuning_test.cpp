@@ -18,13 +18,13 @@ int main(int argc, char **argv) {
     float eb = atof(argv[5]);
     size_t compressed_size;
     if (argc <= 6) {
-        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true);
+        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true, true);
         free(data);
         return 0;
     }
     float sample_ratio = atof(argv[6]);
     if (argc <= 7) {
-        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true, sample_ratio);
+        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true, true, sample_ratio);
         free(data);
         return 0;
     }

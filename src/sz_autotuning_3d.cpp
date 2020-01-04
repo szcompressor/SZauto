@@ -115,7 +115,7 @@ sz_compress_info do_compress_sampling(const float *data, size_t num_elements, in
 template<typename T>
 unsigned char *
 sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
-                          bool baseline = false, bool decompress = false, float sample_ratio = 0.05) {
+                          bool baseline = false, bool decompress = false, bool log = false, float sample_ratio = 0.05) {
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
     float min = data[0];
@@ -145,7 +145,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 
     int capacity = 65536 * 2;
     optimize_quant_invl_3d(data, r1, r2, r3, precision, capacity);
-    printf("tuning capacity: %d\n", capacity);
+//    printf("tuning capacity: %d\n", capacity);
 
     float best_ratio = 0;
     sz_params best_params_stage1;
@@ -168,8 +168,10 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
                         sprintf(buffer,
                                 "lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
                                 use_lorenzo, use_lorenzo_2layer, pred_dim);
-                        fprintf(stdout, "stage:1, ratio:%.2f, reb:%.1e, compress_time:%.3f, %s",
-                                compress_info.ratio, relative_eb, compress_info.compress_time, buffer);
+                        if (log) {
+                            fprintf(stdout, "stage:1, ratio:%.2f, reb:%.1e, compress_time:%.3f, %s",
+                                    compress_info.ratio, relative_eb, compress_info.compress_time, buffer);
+                        }
                         if (compress_info.ratio > best_ratio * 1.02) {
                             best_ratio = compress_info.ratio;
                             best_params_stage1 = params;
@@ -179,8 +181,9 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
                 }
             }
         }
-
-        fprintf(stdout, "Stage:1, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
+        if (log) {
+            fprintf(stdout, "Stage:1, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
+        }
     }
 
 
@@ -244,8 +247,11 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
                                                     compress_info.regression_count * 100.0 / compress_info.block_count,
                                                     compress_info.regression2_count * 100.0 / compress_info.block_count
                                             );
-                                            fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s", relative_eb,
-                                                    compress_info.ratio, compress_info.compress_time, buffer);
+                                            if (log) {
+                                                fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s",
+                                                        relative_eb,
+                                                        compress_info.ratio, compress_info.compress_time, buffer);
+                                            }
                                             if (compress_info.ratio > best_ratio * 1.01) {
                                                 best_ratio = compress_info.ratio;
                                                 best_params_stage2 = params;
@@ -282,15 +288,19 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
                     compress_info.regression_count * 100.0 / compress_info.block_count,
                     compress_info.regression2_count * 100.0 / compress_info.block_count
             );
-            fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s", relative_eb,
-                    compress_info.ratio, compress_info.compress_time, buffer);
+            if (log) {
+                fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s", relative_eb,
+                        compress_info.ratio, compress_info.compress_time, buffer);
+            }
             if (compress_info.ratio > best_ratio * 1.01) {
                 best_ratio = compress_info.ratio;
                 best_params_stage2 = params;
                 memcpy(best_param_str, buffer, 1000 * sizeof(char));
             }
         }
-        fprintf(stdout, "Stage:2, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
+        if (log) {
+            fprintf(stdout, "Stage:2, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
+        }
 
     }
 
@@ -487,7 +497,7 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
 template
 unsigned char *
 sz_compress_autotuning_3d(float *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
-                          bool baseline = false, bool decompress = false, float sample_ratio = 0.05);
+                          bool baseline = false, bool decompress = false, bool log = false, float sample_ratio = 0.05);
 
 template
 float *
