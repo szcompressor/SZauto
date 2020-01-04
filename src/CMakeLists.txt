@@ -1,6 +1,7 @@
 add_library (sz_cpp SHARED 
 	sz_compression_utils.cpp
 	sz_compress_3d.cpp
+	sz_autotuning_3d.cpp
 	sz_decompression_utils.cpp
 	sz_decompress_3d.cpp
 	sz_huffman.cpp
