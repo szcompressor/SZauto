@@ -1,4 +1,4 @@
-add_library (sz_cpp SHARED 
+add_library (sz_cpp STATIC
 	sz_compression_utils.cpp
 	sz_compress_3d.cpp
 	sz_autotuning_3d.cpp
