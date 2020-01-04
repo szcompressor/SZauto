@@ -4,7 +4,7 @@
 #include <vector>
 
 unsigned int
-estimate_quantization_intervals(const std::vector<size_t>& intervals, size_t sample_count){
+static estimate_quantization_intervals(const std::vector<size_t>& intervals, size_t sample_count){
 	size_t target = sample_count * QuantIntvAccThreshold;
 	size_t sum = 0;
 	size_t i = 0;
@@ -20,7 +20,7 @@ estimate_quantization_intervals(const std::vector<size_t>& intervals, size_t sam
 }
 
 float
-estimate_mean_freq_and_position(const std::vector<size_t>& freq_intervals, double precision, size_t sample_count, float& mean_guess){
+static estimate_mean_freq_and_position(const std::vector<size_t>& freq_intervals, double precision, size_t sample_count, float& mean_guess){
 	size_t max_sum = 0;
 	size_t max_index = 0;
 	size_t tmp_sum = 0;

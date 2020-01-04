@@ -170,8 +170,8 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
                         sprintf(buffer,
                                 "lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
                                 use_lorenzo, use_lorenzo_2layer, pred_dim);
-                        fprintf(stdout, "stage:1, ratio:%.2f, reb:%.1e, compress_time:%.3f, PSNR:%.1f, %s",
-                                compress_info.ratio, relative_eb, compress_info.compress_time, compress_info.psnr, buffer);
+                        fprintf(stdout, "stage:1, ratio:%.2f, reb:%.1e, compress_time:%.3f, %s",
+                                compress_info.ratio, relative_eb, compress_info.compress_time, buffer);
                         if (compress_info.ratio > best_ratio * 1.02) {
                             best_ratio = compress_info.ratio;
                             best_params_stage1 = params;
