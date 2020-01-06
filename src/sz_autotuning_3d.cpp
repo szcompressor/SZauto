@@ -503,6 +503,32 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
     char best_param_str[1000];
     char buffer[1000];
 
+    for (auto use_lorenzo:{false, true}) {
+        for (auto use_lorenzo_2layer:{false, true}) {
+            if (use_lorenzo || use_lorenzo_2layer) {
+                auto pred_dim_set = {1, 2, 3};
+                for (auto pred_dim: pred_dim_set) {
+                    sz_params params(false, 6, pred_dim, 0, use_lorenzo,
+                                     use_lorenzo_2layer, false, false, precision);
+                    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, params,
+                                                                             false);
+
+                    sprintf(buffer,
+                            "stage:0, ratio: %.1f, reb:%.1e, compress_time:%.1f, PSNR= %.1f, lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
+                            compress_info.ratio, eb, compress_info.compress_time, compress_info.psnr, use_lorenzo,
+                            use_lorenzo_2layer, pred_dim);
+                    fprintf(stderr, "%s", buffer);
+                    if (compress_info.ratio > best_ratio) {
+                        best_ratio = compress_info.ratio;
+                        memcpy(best_param_str, buffer, 1000 * sizeof(char));
+                    }
+                }
+            }
+        }
+    }
+    fprintf(stderr, "Stage:0, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
+
+    best_ratio = 0;
     sz_params best_params_stage1;
     for (auto use_lorenzo:{false, true}) {
         for (auto use_lorenzo_2layer:{false, true}) {
