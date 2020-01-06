@@ -7,9 +7,9 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=7-00:00:00
 
-chmod +x /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh
+chmod +x /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh
 
-srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69 &
-srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69 &
+srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69 &
 
 wait
