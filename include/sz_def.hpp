@@ -67,14 +67,17 @@ struct sz_params {
     float poly_regression_param_eb_independent;
     float poly_regression_param_eb_linear;
     float poly_regression_param_eb_poly;
+    float reg_eb_base, reg_eb_1;
+    float poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2;
     float sample_ratio;
     bool lossless;
 
     sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool url = true,
               bool upr = false, float precision = 0.0,
-              float reg_eb_base = RegErrThreshold, float reg_eb_1 = -1,
-              float poly_reg_eb_base = PolyRegErrThreshold, float poly_reg_eb_1 = 5, float poly_reg_eb_2 = 20, float prn = 0.0, int cp=0,
-              float sr=1.0, bool ll=true) :
+              float _reg_eb_base = RegErrThreshold, float _reg_eb_1 = -1,
+              float _poly_reg_eb_base = PolyRegErrThreshold, float _poly_reg_eb_1 = 5, float _poly_reg_eb_2 = 20, float prn = 0.0,
+              int cp = 0,
+              float sr = 1.0, bool ll = true) :
             block_independant(bi), block_size(bs), prediction_dim(pd), increase_quant_intv(iqi),
             use_lorenzo(lo), use_lorenzo_2layer(lo2), use_regression_linear(url), use_poly_regression(upr),
             poly_regression_noise(prn * precision), capacity(cp), sample_ratio(sr), lossless(ll) {
@@ -82,7 +85,12 @@ struct sz_params {
         if (use_lorenzo_2layer) {
             lorenzo_padding_layer = 2;
         }
-        if (reg_eb_1 == -1) {
+        reg_eb_base = _reg_eb_base;
+        reg_eb_1 = _reg_eb_1;
+        poly_reg_eb_base = _poly_reg_eb_base;
+        poly_reg_eb_1 = _poly_reg_eb_1;
+        poly_reg_eb_2 = _poly_reg_eb_2;
+        if (_reg_eb_1 == -1) {
             reg_eb_1 = block_size;
         }
         regression_param_eb_linear = reg_eb_base * precision / RegCoeffNum3d / (float) block_size;
