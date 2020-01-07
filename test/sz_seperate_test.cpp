@@ -158,23 +158,23 @@ int main(int argc, char **argv) {
 
     size_t compressed_size;
 
-    {
-        sz_params params_base(false, 8, 3, 0, true, false,
-                              true, false, eb * (max - min), 0.1, 1);
-        params_base.filename = argv[1];
-        params_base.eb = eb;
-        sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min),
-                                                                             params_base,
-                                                                             true);
-        fprintf(stdout,
-                "FINALB: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
-                eb, compress_info.ratio,
-                compress_info.compress_time, 0, compress_info.psnr,
-                compress_info.nrmse);
-    }
-
-
-    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
+//    {
+//        sz_params params_base(false, 8, 3, 0, true, false,
+//                              true, false, eb * (max - min), 0.1, 1);
+//        params_base.filename = argv[1];
+//        params_base.eb = eb;
+//        sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min),
+//                                                                             params_base,
+//                                                                             true);
+//        fprintf(stdout,
+//                "FINALB: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+//                eb, compress_info.ratio,
+//                compress_info.compress_time, 0, compress_info.psnr,
+//                compress_info.nrmse);
+//    }
+//
+//
+//    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
 
     {
 
