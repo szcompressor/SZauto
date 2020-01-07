@@ -84,7 +84,7 @@ T *sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, 
 
 
 template<typename T>
-sz_compress_info do_compress_sampling(const float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+sz_compress_info do_compress_sampling(const T *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                       sz_params params) {
     size_t result_size = 0;
     sz_compress_info compressInfo;
@@ -819,3 +819,6 @@ template
 sz_compress_info
 sz_compress_decompress_highorder_3d(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                     sz_params params, bool use_decompress);
+template
+sz_compress_info do_compress_sampling(const float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                                      sz_params params);
