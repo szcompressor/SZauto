@@ -178,8 +178,8 @@ int main(int argc, char **argv) {
 
     {
 
-        sz_params params_high(false, 6, 3, 0, true, true,
-                              true, true, eb * (max - min));
+        sz_params params_high(false, 8, 3, 0, true, true,
+                              true, true, eb * (max - min), 0.1, 10, 1, 10, 10);
         params_high.filename = argv[1];
         params_high.eb = eb;
         sz_compress_info compress_info_high = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
