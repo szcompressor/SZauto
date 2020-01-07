@@ -11,8 +11,6 @@ template<typename T>
 unsigned char *
 sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
                                        bool baseline = false, bool decompress = false, bool log = false,
-                                       bool highorder_use_lorenzo2 = true,
-                                       bool highorder_use_poly_regression = true,
                                        float sample_ratio = 0.05) {
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
@@ -49,10 +47,7 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
     sz_params best_params_stage1;
     {
         for (auto use_lorenzo:{true}) {
-            list<bool> use_lorenzo_2layer_set = {true, false};
-            if (!highorder_use_lorenzo2) {
-                use_lorenzo_2layer_set = {false};
-            }
+            list<bool> use_lorenzo_2layer_set = {false};
             for (auto use_lorenzo_2layer:use_lorenzo_2layer_set) {
                 //TODO kai
 //            for (auto use_lorenzo_2layer:{true}) {
@@ -93,12 +88,9 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
     sz_compress_info best_compress_info;
     best_ratio = 0;
     {
-        list<int> block_size_set = {5, 6, 7, 8};
+        list<int> block_size_set = {4, 5, 6, 7, 8, 9, 10};
         list<bool> regression_set = {true};
-        list<bool> poly_regression_set = {false, true};
-        if (!highorder_use_poly_regression) {
-            poly_regression_set = {false};
-        }
+        list<bool> poly_regression_set = {false};
         for (auto use_regression:regression_set) {
             for (auto use_poly_regression:poly_regression_set) {
                 if (!use_regression && !use_poly_regression) {
@@ -240,8 +232,8 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
         auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3,
                                                                  true);
         fprintf(stdout,
-                "FINAL%d%d: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
-                highorder_use_lorenzo2, highorder_use_poly_regression, relative_eb, compress_info.ratio,
+                "FINAL1: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
+                relative_eb, compress_info.ratio,
                 compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
                 compress_info.nrmse, sample_time, sample_num,
                 best_param_str);
@@ -268,20 +260,19 @@ int main(int argc, char **argv) {
 
     size_t compressed_size;
 
-    sz_params params(false, 6, 3, 0, true, false,
-                     true, false, eb * (max - min));
+    sz_params params(false, 6, 3, 0, true, true,
+                     true, true, eb * (max - min));
     params.filename = argv[1];
     params.eb = eb;
     sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params,
-                                                                        true);
+                                                                         true);
     fprintf(stdout,
-            "FINAL--: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+            "FINAL0: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
             eb, compress_info.ratio,
             compress_info.compress_time, 0, compress_info.psnr,
             compress_info.nrmse);
 
-    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true, false, false);
-    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true, true, true);
+    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
 
     free(data);
 
