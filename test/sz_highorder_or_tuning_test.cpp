@@ -97,7 +97,7 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
                     continue;
                 }
                 for (auto block_size:block_size_set) {
-                    list<double> reg_eb_base_set = {1};
+                    list<double> reg_eb_base_set = {0.1, 1};
                     list<double> reg_eb_1_set = {block_size * 1.0};
                     list<double> poly_reg_eb_base_set = {0.1};
                     list<double> poly_reg_eb_1_set = {5};
@@ -232,7 +232,7 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
         auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3,
                                                                  true);
         fprintf(stdout,
-                "FINAL1: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
+                "FINALT: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
                 relative_eb, compress_info.ratio,
                 compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
                 compress_info.nrmse, sample_time, sample_num,
@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
     sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params,
                                                                          true);
     fprintf(stdout,
-            "FINAL0: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+            "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
             eb, compress_info.ratio,
             compress_info.compress_time, 0, compress_info.psnr,
             compress_info.nrmse);
