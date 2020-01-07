@@ -22,7 +22,7 @@ using namespace std;
 #define SELECTOR_REGRESSION_POLY 3
 #define RegCoeffNum3d 4
 #define RegPolyCoeffNum3d 10
-#define RegErrThreshold 0.1
+#define RegErrThreshold 1
 #define PolyRegErrThreshold 0.1
 #define RegCoeffRadius 32768
 #define RegCoeffRadius1 8192

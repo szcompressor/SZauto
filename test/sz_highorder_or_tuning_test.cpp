@@ -11,7 +11,7 @@ template<typename T>
 unsigned char *
 sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
                                        bool baseline = false, bool decompress = false, bool log = false,
-                                       float sample_ratio = 0.05) {
+                                       float sample_ratio = 0.2) {
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
     float min = data[0];
@@ -264,15 +264,15 @@ int main(int argc, char **argv) {
                      true, true, eb * (max - min));
     params.filename = argv[1];
     params.eb = eb;
-    sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params,
-                                                                         true);
-    fprintf(stdout,
-            "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
-            eb, compress_info.ratio,
-            compress_info.compress_time, 0, compress_info.psnr,
-            compress_info.nrmse);
+//    sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params,
+//                                                                         true);
+//    fprintf(stdout,
+//            "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+//            eb, compress_info.ratio,
+//            compress_info.compress_time, 0, compress_info.psnr,
+//            compress_info.nrmse);
 
-    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
+    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, true, true, true);
 
     free(data);
 
