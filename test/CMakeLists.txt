@@ -1,7 +1,7 @@
 add_executable (sz_test1 sz_compress_test.cpp)
 add_executable (sz_test2 sz_huffman_lossless.cpp)
 add_executable (sz_autotuning sz_autotuning_test.cpp)
-add_executable (sz_highorder_or_tuning_test sz_highorder_or_tuning_test.cpp)
+add_executable (sz_highorder_or_tuning_test sz_seperate_test.cpp)
 target_include_directories (sz_test1 PRIVATE ${ZSTD_INCLUDES})
 target_include_directories (sz_test2 PRIVATE ${ZSTD_INCLUDES})
 target_include_directories (sz_autotuning PRIVATE ${ZSTD_INCLUDES})

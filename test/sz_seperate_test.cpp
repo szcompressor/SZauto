@@ -11,7 +11,7 @@ template<typename T>
 unsigned char *
 sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
                                        bool baseline = false, bool decompress = false, bool log = false,
-                                       float sample_ratio = 0.1) {
+                                       float sample_ratio = 0.05) {
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
     float min = data[0];
@@ -128,7 +128,7 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
     float sample_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
     if (decompress) {
         auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3,
-                                                                 true);
+                                                                 false);
         fprintf(stdout,
                 "FINALT: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
                 relative_eb, compress_info.ratio,
@@ -159,13 +159,13 @@ int main(int argc, char **argv) {
     size_t compressed_size;
 
     {
-        sz_params params_base(false, 6, 3, 0, true, false,
-                              true, false, eb * (max - min), 0.1, 6);
+        sz_params params_base(false, 8, 3, 0, true, false,
+                              true, false, eb * (max - min), 0.1, 1);
         params_base.filename = argv[1];
         params_base.eb = eb;
         sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min),
                                                                              params_base,
-                                                                             true);
+                                                                             false);
         fprintf(stdout,
                 "FINALB: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
                 eb, compress_info.ratio,
@@ -178,13 +178,15 @@ int main(int argc, char **argv) {
 
     {
 
-        sz_params params_high(false, 8, 3, 0, true, true,
-                              true, true, eb * (max - min), 0.1, 10, 1, 10, 10);
+        sz_params params_high(false, 8, 3, 0, false, true,
+                              false, true, eb * (max - min));
+//        sz_params params_high(false, 8, 3, 0, false, true,
+//                              false, true, eb * (max - min), 0.1, 1, 0.1, 1, 1);
         params_high.filename = argv[1];
         params_high.eb = eb;
         sz_compress_info compress_info_high = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
                                                                                   eb * (max - min), params_high,
-                                                                                  true);
+                                                                                  false);
         fprintf(stdout,
                 "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
                 eb, compress_info_high.ratio,
