@@ -84,8 +84,8 @@ chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh logscale-98x1200x1200 U-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh logscale-98x1200x1200 V-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh logscale-98x1200x1200 W-98x1200x1200.dat 98 1200 1200
-/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-816x115x69x69 spin_0.dat 93840 69 69
-/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-816x115x69x69 spin_1.dat 93840 69 69 
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-34500x69x69 s0l300.dat      34500 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-34500x69x69 s1200l300.dat   34500 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack6k-34500x69x69 s1500l300.dat   34500 69 69

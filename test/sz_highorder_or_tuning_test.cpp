@@ -11,7 +11,7 @@ template<typename T>
 unsigned char *
 sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
                                        bool baseline = false, bool decompress = false, bool log = false,
-                                       float sample_ratio = 0.2) {
+                                       float sample_ratio = 0.1) {
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
     float min = data[0];
@@ -44,161 +44,59 @@ sz_compress_autotuning_3d_no_highorder(T *data, size_t r1, size_t r2, size_t r3,
 //    printf("tuning capacity: %d\n", capacity);
 
     float best_ratio = 0;
-    sz_params best_params_stage1;
-    {
-        for (auto use_lorenzo:{true}) {
-            list<bool> use_lorenzo_2layer_set = {false};
-            for (auto use_lorenzo_2layer:use_lorenzo_2layer_set) {
-                //TODO kai
-//            for (auto use_lorenzo_2layer:{true}) {
-                if (use_lorenzo || use_lorenzo_2layer) {
-                    list<int> pred_dim_set = {3, 2};
-                    for (auto pred_dim: pred_dim_set) {
-                        sz_params params(false, 6, pred_dim, 0, use_lorenzo,
-                                         use_lorenzo_2layer, false, false, precision);
-                        params.sample_ratio = sample_ratio * 1.2;
-                        params.capacity = capacity;
-                        params.lossless = false;
-                        auto compress_info = do_compress_sampling<T>(data, num_elements, r1, r2, r3, precision, params);
-                        sample_num++;
-
-                        sprintf(buffer,
-                                "lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
-                                use_lorenzo, use_lorenzo_2layer, pred_dim);
-                        if (log) {
-                            fprintf(stdout, "stage:1, ratio:%.2f, reb:%.1e, compress_time:%.3f, %s",
-                                    compress_info.ratio, relative_eb, compress_info.compress_time, buffer);
-                        }
-                        if (compress_info.ratio > best_ratio * 1.02) {
-                            best_ratio = compress_info.ratio;
-                            best_params_stage1 = params;
-                            memcpy(best_param_str, buffer, 1000 * sizeof(char));
-                        }
-                    }
-                }
-            }
-        }
-        if (log) {
-            fprintf(stdout, "Stage:1, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
-        }
-    }
-
-
-    sz_params best_params_stage2 = best_params_stage1;
+    sz_params best_params_stage2;
     sz_compress_info best_compress_info;
-    best_ratio = 0;
     {
-        list<int> block_size_set = {4, 5, 6, 7, 8, 9, 10};
-        list<bool> regression_set = {true};
-        list<bool> poly_regression_set = {false};
-        for (auto use_regression:regression_set) {
-            for (auto use_poly_regression:poly_regression_set) {
-                if (!use_regression && !use_poly_regression) {
-                    continue;
-                }
+        list<int> block_size_set = {3, 4, 5, 6, 7, 8};
+        for (auto pred_dim: {3, 2}) {
+            for (auto use_regression:{true}) {
                 for (auto block_size:block_size_set) {
-                    list<double> reg_eb_base_set = {0.1, 1};
+                    list<double> reg_eb_base_set = {1};
                     list<double> reg_eb_1_set = {block_size * 1.0};
-                    list<double> poly_reg_eb_base_set = {0.1};
-                    list<double> poly_reg_eb_1_set = {5};
-                    list<double> poly_reg_eb_2_set = {20};
-                    list<double> poly_noise_set = {0};
                     if (!use_regression) {
                         reg_eb_base_set = {0};
                         reg_eb_1_set = {0};
                     }
-                    if (!use_poly_regression) {
-                        poly_reg_eb_base_set = {0};
-                        poly_reg_eb_1_set = {0};
-                        poly_reg_eb_2_set = {0};
-                        poly_noise_set = {0};
-                    }
                     for (auto reg_eb_base:reg_eb_base_set) {
                         for (auto reg_eb_1:reg_eb_1_set) {
-                            for (auto poly_reg_eb_base:poly_reg_eb_base_set) {
-                                for (auto poly_reg_eb_1:poly_reg_eb_1_set) {
-                                    for (auto poly_reg_eb_2:poly_reg_eb_2_set) {
-                                        for (auto poly_reg_noise:poly_noise_set) {
-                                            sz_params params(false, block_size, best_params_stage1.prediction_dim, 0,
-                                                             best_params_stage1.use_lorenzo,
-                                                             best_params_stage1.use_lorenzo_2layer,
-                                                             use_regression, use_poly_regression, precision, reg_eb_base,
-                                                             reg_eb_1,
-                                                             poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
-                                            params.sample_ratio = sample_ratio * 1.2;
-                                            params.capacity = capacity;
-                                            auto compress_info = do_compress_sampling<T>(data, num_elements, r1, r2, r3,
-                                                                                         precision, params);
-                                            sample_num++;
+                            sz_params params(false, block_size, pred_dim, 0, true, false,
+                                             use_regression, false, precision, reg_eb_base, reg_eb_1);
+                            params.capacity = capacity;
+                            auto compress_info = do_compress_sampling<T>(data, num_elements, r1, r2, r3,
+                                                                         precision, params);
+                            sample_num++;
 
-                                            sprintf(buffer,
-                                                    "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
-                                                    "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise %.3f, "
-                                                    "lorenzo: %.0f, lorenzo2: %.0f, regression:%.0f, regression2:%.0f\n",
-                                                    best_params_stage1.use_lorenzo, best_params_stage1.use_lorenzo_2layer,
-                                                    use_regression, use_poly_regression,
-                                                    block_size, best_params_stage1.prediction_dim, reg_eb_base, reg_eb_1,
-                                                    poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise,
-                                                    compress_info.lorenzo_count * 100.0 / compress_info.block_count,
-                                                    compress_info.lorenzo2_count * 100.0 / compress_info.block_count,
-                                                    compress_info.regression_count * 100.0 / compress_info.block_count,
-                                                    compress_info.regression2_count * 100.0 / compress_info.block_count
-                                            );
-                                            if (log) {
-                                                fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s",
-                                                        relative_eb,
-                                                        compress_info.ratio, compress_info.compress_time, buffer);
-                                            }
-                                            if (compress_info.ratio > best_ratio * 1.01) {
-                                                best_ratio = compress_info.ratio;
-                                                best_params_stage2 = params;
-                                                memcpy(best_param_str, buffer, 1000 * sizeof(char));
-                                                best_compress_info = compress_info;
-                                            }
-                                        }
-                                    }
-                                }
+                            sprintf(buffer,
+                                    "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
+                                    "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, "
+                                    "lorenzo: %.0f, lorenzo2: %.0f, regression:%.0f, regression2:%.0f\n",
+                                    true, false,
+                                    use_regression, false,
+                                    block_size, pred_dim, reg_eb_base, reg_eb_1,
+                                    compress_info.lorenzo_count * 100.0 / compress_info.block_count,
+                                    compress_info.lorenzo2_count * 100.0 / compress_info.block_count,
+                                    compress_info.regression_count * 100.0 / compress_info.block_count,
+                                    compress_info.regression2_count * 100.0 / compress_info.block_count
+                            );
+                            if (log) {
+                                fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s",
+                                        relative_eb,
+                                        compress_info.ratio, compress_info.compress_time, buffer);
+                            }
+                            if (compress_info.ratio > best_ratio * 1.01) {
+                                best_ratio = compress_info.ratio;
+                                best_params_stage2 = params;
+                                memcpy(best_param_str, buffer, 1000 * sizeof(char));
+                                best_compress_info = compress_info;
                             }
                         }
                     }
                 }
             }
         }
-        if ((best_compress_info.lorenzo_count * 1.0 + best_compress_info.lorenzo2_count) / best_compress_info.block_count > 0.9) {
-            sz_params params = best_params_stage2;
-            params.use_lorenzo = best_params_stage1.use_lorenzo;
-            params.use_lorenzo_2layer = best_params_stage1.use_lorenzo_2layer;
-            params.prediction_dim = best_params_stage1.prediction_dim;
-            auto compress_info = do_compress_sampling<T>(data, num_elements, r1, r2, r3, precision, params);
-            sample_num++;
-
-            sprintf(buffer,
-                    "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
-                    "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise %.3f, "
-                    "lorenzo: %.0f, lorenzo2: %.0f, regression:%.0f, regression2:%.0f\n",
-                    params.use_lorenzo, params.use_lorenzo_2layer,
-                    false, false,
-                    params.block_size, params.prediction_dim, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0,
-                    compress_info.lorenzo_count * 100.0 / compress_info.block_count,
-                    compress_info.lorenzo2_count * 100.0 / compress_info.block_count,
-                    compress_info.regression_count * 100.0 / compress_info.block_count,
-                    compress_info.regression2_count * 100.0 / compress_info.block_count
-            );
-            if (log) {
-                fprintf(stdout, "stage:2, reb:%.1e, ratio:%.2f, compress_time:%.3f, %s", relative_eb,
-                        compress_info.ratio, compress_info.compress_time, buffer);
-            }
-            if (compress_info.ratio > best_ratio * 1.01) {
-                best_ratio = compress_info.ratio;
-                best_params_stage2 = params;
-                memcpy(best_param_str, buffer, 1000 * sizeof(char));
-            }
-        }
-        if (log) {
-            fprintf(stdout, "Stage:2, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
-        }
-
+    }
+    if (log) {
+        fprintf(stdout, "Stage:2, Best Ratio %.2f, Params %s", best_ratio, best_param_str);
     }
 
     sz_params best_params_stage3;
@@ -260,19 +158,39 @@ int main(int argc, char **argv) {
 
     size_t compressed_size;
 
-    sz_params params(false, 6, 3, 0, true, true,
-                     true, true, eb * (max - min));
-    params.filename = argv[1];
-    params.eb = eb;
-//    sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params,
-//                                                                         true);
-//    fprintf(stdout,
-//            "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
-//            eb, compress_info.ratio,
-//            compress_info.compress_time, 0, compress_info.psnr,
-//            compress_info.nrmse);
+    {
+        sz_params params_base(false, 6, 3, 0, true, false,
+                              true, false, eb * (max - min), 0.1, 6);
+        params_base.filename = argv[1];
+        params_base.eb = eb;
+        sz_compress_info compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min),
+                                                                             params_base,
+                                                                             true);
+        fprintf(stdout,
+                "FINALB: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+                eb, compress_info.ratio,
+                compress_info.compress_time, 0, compress_info.psnr,
+                compress_info.nrmse);
+    }
 
-    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, true, true, true);
+
+    sz_compress_autotuning_3d_no_highorder<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
+
+    {
+
+        sz_params params_high(false, 6, 3, 0, true, true,
+                              true, true, eb * (max - min));
+        params_high.filename = argv[1];
+        params_high.eb = eb;
+        sz_compress_info compress_info_high = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
+                                                                                  eb * (max - min), params_high,
+                                                                                  true);
+        fprintf(stdout,
+                "FINALH: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
+                eb, compress_info_high.ratio,
+                compress_info_high.compress_time, 0, compress_info_high.psnr,
+                compress_info_high.nrmse);
+    }
 
     free(data);
 

@@ -30,8 +30,8 @@ chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh hurricane-100x500x500 Uf48.bin.dat 100 500 500
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh hurricane-100x500x500 Vf48.bin.dat 100 500 500
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh hurricane-100x500x500 Wf48.bin.dat 100 500 500
-/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-816x115x69x69 spin_0.dat 93840 69 69
-/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-816x115x69x69 spin_1.dat 93840 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh scale-98x1200x1200 PRES-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh scale-98x1200x1200 QI-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh scale-98x1200x1200 QV-98x1200x1200.dat 98 1200 1200
