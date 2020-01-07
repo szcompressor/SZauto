@@ -47,5 +47,5 @@ chmod +x /home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.
 /home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh scale-98x1200x1200 QS-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh scale-98x1200x1200 T-98x1200x1200.dat 98 1200 1200
 /home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh scale-98x1200x1200 W-98x1200x1200.dat 98 1200 1200
-/home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh qmcpack8h-816x115x69x69 spin_0.dat 93840 69 69
-/home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh qmcpack8h-816x115x69x69 spin_1.dat 93840 69 69
+/home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69
+/home/kazhao/meta_compressor/experiment/seperate_evaluation/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69
