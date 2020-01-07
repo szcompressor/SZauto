@@ -50,6 +50,8 @@ int main(int argc, char **argv) {
         sz_params params(false, block_size, pred_dim, 0, lorenzo, lorenzo_2layer,
                          regression_linear, regression_poly, precision);
         params.capacity = capacity;
+        params.filename = argv[1];
+        params.eb = eb;
         sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params, true);
         free(data);
         return 0;
@@ -77,6 +79,8 @@ int main(int argc, char **argv) {
     sz_params params(false, block_size, pred_dim, 0, lorenzo, lorenzo_2layer,
                      regression_linear, regression_poly, precision, reg_eb_base, reg_eb_1,
                      poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2, poly_reg_noise);
+    params.filename = argv[1];
+    params.eb = eb;
     sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params, true);
 
     free(data);

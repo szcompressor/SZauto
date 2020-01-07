@@ -11,6 +11,7 @@
 using namespace std;
 
 
+
 template<typename T>
 sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                                      sz_params params, bool use_decompress) {
@@ -48,6 +49,7 @@ sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_element
         free(result_after_lossless);
         // writefile("dec_data.dat", dec_data, num_elements);
         verify<T>((T *) data, dec_data, num_elements, compressInfo.psnr, compressInfo.nrmse);
+
         free(result);
         free(dec_data);
     } else {

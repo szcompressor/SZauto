@@ -22,4 +22,9 @@ sz_compress_info
 sz_compress_decompress_highorder_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                     sz_params params, bool use_decompress);
 
+
+template<typename T>
+sz_compress_info do_compress_sampling(const float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                                      sz_params params);
+
 #endif

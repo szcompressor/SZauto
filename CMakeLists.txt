@@ -7,6 +7,7 @@ set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_FLAGS "-g -O3")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 add_definitions(-DPOLY_REGRESSION_COEF_FILE="/Users/kzhao/Documents/Workspace/meta_compressor/data/PolyRegressionCoefAux3D.f32")
+#add_definitions(-DDEBUG_STATIC="true")
 
 find_library(ZSTD_LIBS zstd HINTS "/Users/kzhao/Documents/Workspace/zstd-1.4.2/install/lib")
 set(ZSTD_INCLUDES "/Users/kzhao/Documents/Workspace/zstd-1.4.2/install/include")

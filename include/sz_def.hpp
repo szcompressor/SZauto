@@ -71,6 +71,8 @@ struct sz_params {
     float poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2;
     float sample_ratio;
     bool lossless;
+    char * filename;
+    float eb;
 
     sz_params(bool bi = false, int bs = 6, int pd = 3, int iqi = 0, bool lo = true, bool lo2 = false, bool url = true,
               bool upr = false, float precision = 0.0,
