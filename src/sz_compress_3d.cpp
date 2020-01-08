@@ -812,12 +812,12 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
 
-#ifdef DEBUG_STATIC
+#ifdef DUMP_PREDICTION_ERR_FOLDER
     char filename[300];
     T *prediction_err = (T *) malloc(size.num_elements * sizeof(T));
     string input_name(params.filename);
     auto input_names = split(input_name, '/');
-    sprintf(filename, "/Users/kzhao/Documents/Workspace/sz-kai/autotunning/prediction_err/prediction_err_%s_%s_%.1e_l(%d)_l2(%d)_r(%d)_r2(%d).out", input_names[input_names.size() - 2].data(),
+    sprintf(filename, "%s/%s_%s_%.1e_l(%d)_l2(%d)_r(%d)_r2(%d).out", DUMP_PREDICTION_ERR_FOLDER, input_names[input_names.size() - 2].data(),
             input_names[input_names.size() - 1].data(), params.eb, params.use_lorenzo,
             params.use_lorenzo_2layer, params.use_regression_linear, params.use_poly_regression);
     printf("write file %s\n", filename);

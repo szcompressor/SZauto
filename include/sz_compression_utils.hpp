@@ -9,7 +9,7 @@
 #define QuantIntvAccThreshold 0.999
 #define RegThresholdSize3d 4
 
-#ifdef DEBUG_STATIC
+#ifdef DUMP_PREDICTION_ERR_FOLDER
 #include <string>
 #include <sstream>
 #include <vector>
