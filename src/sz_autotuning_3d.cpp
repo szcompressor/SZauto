@@ -11,7 +11,6 @@
 using namespace std;
 
 
-
 template<typename T>
 sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                                      sz_params params, bool use_decompress) {
@@ -536,18 +535,18 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
         for (auto use_lorenzo_2layer:{false, true}) {
             auto pred_dim_set = {3};
             if (use_lorenzo || use_lorenzo_2layer) {
-                pred_dim_set = {2, 3};
+                pred_dim_set = {1, 2, 3};
             }
             for (auto pred_dim: pred_dim_set) {
                 for (auto use_regression:{false, true}) {
                     for (auto use_poly_regression:{false, true}) {
-                        auto block_size_set = {4, 5, 6, 7, 8, 9, 10, 11, 12};
+                        auto block_size_set = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20, 25, 30};
                         for (auto block_size:block_size_set) {
-                            list<double> reg_eb_base_set = {1};
-                            list<double> reg_eb_1_set = {block_size * 1.0};
-                            list<double> poly_reg_eb_base_set = {0.1};
-                            list<double> poly_reg_eb_1_set = {5};
-                            list<double> poly_reg_eb_2_set = {20};
+                            list<double> reg_eb_base_set = {0.1, 1};
+                            list<double> reg_eb_1_set = {1, block_size * 1.0, 10};
+                            list<double> poly_reg_eb_base_set = {0.1, 1};
+                            list<double> poly_reg_eb_1_set = {1, 5};
+                            list<double> poly_reg_eb_2_set = {10, 20};
                             list<double> poly_noise_set = {0};
                             if (!use_regression) {
                                 reg_eb_base_set = {0};
@@ -616,10 +615,10 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
     sz_params best_params_stage2_pre;
     for (auto use_regression:{true, false}) {
         for (auto use_poly_regression:{best_params_stage1.use_poly_regression}) {
-            auto block_size_set = {4, 5, 6, 7, 8, 9, 10, 11, 12};
+            auto block_size_set = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20, 25, 30};
             for (auto block_size:block_size_set) {
-                list<double> reg_eb_base_set = {0.01, 0.1, 1, 5, 10, 100};
-                list<double> reg_eb_1_set = {0.01, 0.1, 0, 1, block_size * 1.0, 10, 50, 100};
+                list<double> reg_eb_base_set = {0, 0.01, 0.1, 1, 5, 10, 20, 50, 100, 1000};
+                list<double> reg_eb_1_set = {0, 0.01, 0.1, 1, 5, block_size * 1.0, 10, 20, 50, 100, 1000};
                 list<double> poly_reg_eb_base_set = {0.1};
                 list<double> poly_reg_eb_1_set = {5};
                 list<double> poly_reg_eb_2_set = {20};
@@ -698,10 +697,10 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
             for (auto block_size:block_size_set) {
                 list<double> reg_eb_base_set = {best_params_stage2_pre.reg_eb_base};
                 list<double> reg_eb_1_set = {best_params_stage2_pre.reg_eb_1};
-                list<double> poly_reg_eb_base_set = {0.01, 0.1, 1, 2, 10};
-                list<double> poly_reg_eb_1_set = {0, 0.1, 1, 5, 10};
-                list<double> poly_reg_eb_2_set = {0, 0.1, 1, 20, 100};
-                list<double> poly_noise_set = {0, 0.01, 0.1, 1, 10, 100};
+                list<double> poly_reg_eb_base_set = {0.001, 0.01, 0.1, 1, 5, 10, 20, 50, 100};
+                list<double> poly_reg_eb_1_set = {0, 0.01, 0.1, 1, 5, 10, 20, 50, 100};
+                list<double> poly_reg_eb_2_set = {0, 0.01, 0.1, 1, 5, 10, 20, 50, 100};
+                list<double> poly_noise_set = {0, 0.01, 0.1, 1, 5, 10, 20, 50, 100};
                 if (!use_regression) {
                     reg_eb_base_set = {0};
                     reg_eb_1_set = {0};
@@ -763,7 +762,7 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
     }
 
     best_ratio = 0;
-    list<int> capacity_set = {0, 65536, 32768, 16384, 8192, 4096};
+    list<int> capacity_set = {0, 65535 * 2, 65536, 32768, 16384, 8192, 4096};
     sz_params best_params_stage3;
     for (auto capacity:capacity_set) {
         best_params_stage2.capacity = capacity;
@@ -819,6 +818,7 @@ template
 sz_compress_info
 sz_compress_decompress_highorder_3d(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                     sz_params params, bool use_decompress);
+
 template
 sz_compress_info do_compress_sampling(const float *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                       sz_params params);
