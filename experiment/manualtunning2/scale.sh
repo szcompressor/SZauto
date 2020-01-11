@@ -5,7 +5,7 @@
 #SBATCH --nodes 12
 #SBATCH --ntasks=12
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=7-00:00:00
+#SBATCH --time=5-00:00:00
 
 chmod +x /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh
 srun -N 1 -n 1 /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh scale-98x1200x1200 PRES-98x1200x1200.dat 98 1200 1200 &
