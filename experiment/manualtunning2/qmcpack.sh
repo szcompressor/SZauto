@@ -5,7 +5,7 @@
 #SBATCH --nodes 1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=7-00:00:00
+#SBATCH --time=5-00:00:00
 
 chmod +x /home/kazhao/meta_compressor/experiment/manualtunning2/single_job.sh
 
