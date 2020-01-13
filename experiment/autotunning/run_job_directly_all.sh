@@ -8,6 +8,9 @@
 #SBATCH --time=7-00:00:00
 
 chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh
+chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh
+
+/home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh qmcpack6k1-712080x69x69 qmcpackbigdata.dat       712080 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack-288x115x69x69 einspline_288_115_69_69.pre.f32.dat 33120 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh miranda-256x384x384 density.f32.dat  256 384 384
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh miranda-256x384x384 diffusivity.f32.dat 256 384 384
