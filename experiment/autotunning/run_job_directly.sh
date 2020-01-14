@@ -10,7 +10,8 @@
 chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh
 chmod +x /home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh
 
-/home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh qmcpack6k1-712080x69x69 qmcpackbigdata.dat       712080 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh qmcpackbig-356040x69x69 part1.dat 356040 69 69
+/home/kazhao/meta_compressor/experiment/autotunning/single_job_seq.sh qmcpackbig-356040x69x69 part2.dat 356040 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack-288x115x69x69 einspline_288_115_69_69.pre.f32.dat 33120 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_0.dat 93840 69 69
 /home/kazhao/meta_compressor/experiment/autotunning/single_job.sh qmcpack8h-93840x69x69 spin_1.dat 93840 69 69
