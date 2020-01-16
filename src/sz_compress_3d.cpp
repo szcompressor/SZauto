@@ -378,15 +378,20 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
                         data_pos + ix * (size.sample_distance + size.block_size) * r2 * r3 +
                         iy * (size.sample_distance + size.block_size) * r3 +
                         iz * (size.sample_distance + size.block_size);
-                for (int ii = 0; ii < size.block_size + params.lorenzo_padding_layer; ii++) {
-                    for (int jj = 0; jj < size.block_size + params.lorenzo_padding_layer; jj++) {
-                        for (int kk = 0; kk < size.block_size + params.lorenzo_padding_layer; kk++) {
-                            pred_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk] =
-                                    cur_block_data_pos[ii * size.dim0_offset + jj * size.dim1_offset + kk] +
-                                    random_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk];
+
+                //TODO Kai comment this block if to test sampling accuracy without boarder
+                {
+                    for (int ii = 0; ii < size.block_size + params.lorenzo_padding_layer; ii++) {
+                        for (int jj = 0; jj < size.block_size + params.lorenzo_padding_layer; jj++) {
+                            for (int kk = 0; kk < size.block_size + params.lorenzo_padding_layer; kk++) {
+                                pred_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk] =
+                                        cur_block_data_pos[ii * size.dim0_offset + jj * size.dim1_offset + kk] +
+                                        random_buffer[ii * buffer_dim0_offset + jj * buffer_dim1_offset + kk];
+                            }
                         }
                     }
                 }
+
                 cur_block_data_pos += params.lorenzo_padding_layer * (size.dim0_offset + size.dim1_offset + 1);
 
                 bool enable_poly = params.use_poly_regression && size.block_size >= 3;
