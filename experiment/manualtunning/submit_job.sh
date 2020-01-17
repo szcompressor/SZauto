@@ -7,6 +7,4 @@ sbatch ../miranda.sh
 sbatch ../noaa.sh
 sbatch ../nyx.sh
 sbatch ../qmcpack.sh
-sbatch ../qmcpack8h.sh
 sbatch ../scale.sh
-sbatch ../snp.sh
