@@ -9,8 +9,8 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 add_definitions(-DPOLY_REGRESSION_COEF_FILE="$ENV{HOME}/code/meta_compressor/data/PolyRegressionCoefAux3D.f32")
 #add_definitions(-DDUMP_PREDICTION_ERR_FOLDER="$ENV{HOME}/Documents/Workspace/sz-kai/autotunning/highorder/prediction_err/")
 
-find_library(ZSTD_LIBS zstd HINTS "$ENV{HOME}/tools/zstd-1.4.2/install/lib")
-set(ZSTD_INCLUDES "$ENV{HOME}/tools/zstd-1.4.2/install/include")
+find_library(ZSTD_LIBS zstd HINTS "$ENV{HOME}/tools/zstd-1.4.4/install/lib")
+set(ZSTD_INCLUDES "$ENV{HOME}/tools/zstd-1.4.4/install/include")
 add_subdirectory (src)
 add_subdirectory (test)
 
