@@ -655,8 +655,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
         x_data_pos += size.block_size * size.dim0_offset;
     }
     free(pred_buffer);
-    free(reg_params);
-    free(reg_poly_params);
+
 
 //    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
 //           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
@@ -821,6 +820,8 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
         encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
+    free(reg_params);
+    free(reg_poly_params);
 
 #ifdef DUMP_PREDICTION_ERR_FOLDER
     char filename[300];
