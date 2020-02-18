@@ -601,9 +601,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                 if (selection_result == SELECTOR_REGRESSION_POLY) {
 
                     // poly regression
-//                    compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
-//                                                          reg_poly_params_pos, reg_poly_params_type_pos,
-//                                                          reg_poly_unpredictable_data_pos);
+                    compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
+                                                          reg_poly_params_pos, reg_poly_params_type_pos,
+                                                          reg_poly_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_poly_params_pos, pred_buffer_pos,
                                                                        precision,
                                                                        recip_precision, capacity, intv_radius,
@@ -617,9 +617,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     reg_poly_params_type_pos += RegPolyCoeffNum3d;
                 } else if (selection_result == SELECTOR_REGRESSION) {
                     // regression
-//                    compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
-//                                                          reg_params_type_pos,
-//                                                          reg_unpredictable_data_pos);
+                    compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
+                                                          reg_params_type_pos,
+                                                          reg_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision,
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
@@ -814,16 +814,12 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
 //	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);
 
     if (reg_count) {
-//        write_variable_to_dst(compressed_pos, reg_count);
-//        write_array_to_dst(compressed_pos, reg_params, reg_count * RegCoeffNum3d);
-//        encode_regression_coefficients(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
-//                                       reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
+        encode_regression_coefficients(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
+                                       reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
     }
     if (reg_poly_count) {
-//        write_variable_to_dst(compressed_pos, reg_poly_count);
-//        write_array_to_dst(compressed_pos, reg_poly_params, reg_poly_count * RegPolyCoeffNum3d);
-//        encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
-//                                       reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
+        encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
+                                       reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
 
 #ifdef DUMP_PREDICTION_ERR_FOLDER
