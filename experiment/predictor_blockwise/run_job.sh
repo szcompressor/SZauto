@@ -5,6 +5,7 @@
 #SBATCH --nodes 1
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=36
 #SBATCH --time=2:00:00
 
 chmod +x single_job.sh
