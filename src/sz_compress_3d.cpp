@@ -361,8 +361,8 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_real_distribution<> dis(-precision, precision);
     for (int i = 0; i < (size.block_size + params.lorenzo_padding_layer) * (size.block_size + params.lorenzo_padding_layer) *
-                          (size.block_size + params.lorenzo_padding_layer); i++) {
-        random_buffer[i]=dis(gen);
+                        (size.block_size + params.lorenzo_padding_layer); i++) {
+        random_buffer[i] = dis(gen);
     }
 
 
@@ -504,7 +504,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                             size_t offset, const sz_params &params,
                                                                             size_t &reg_count,
                                                                             size_t &reg_poly_count,
-                                                                            sz_compress_info &compress_info) {
+                                                                            sz_compress_info &compress_info,
+                                                                            float *reg_params,
+                                                                            float *reg_poly_params) {
     reg_count = 0;
     reg_poly_count = 0;
     size_t lorenzo_count = 0;
@@ -513,14 +515,14 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
     int *type_pos = type;
     int *indicator_pos = indicator;
 
-    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+//    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
     for (int i = 0; i < RegCoeffNum3d; i++) {
         reg_params[i] = 0;
     }
     float *reg_params_pos = reg_params + RegCoeffNum3d;
     int *reg_params_type_pos = reg_params_type;
 
-    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+//    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
     for (int i = 0; i < RegPolyCoeffNum3d; i++) {
         reg_poly_params[i] = 0;
     }
@@ -774,6 +776,9 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
     // predict and quant on KNL
     T precision_t = (T) precision;
     size_t reg_count = 0, reg_poly_count = 0;
+    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+
     prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(data, size, mean_info,
                                                                                 precision_t, capacity, intv_radius, indicator,
                                                                                 type, reg_params_type, reg_unpredictable_data_pos,
@@ -781,7 +786,7 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
                                                                                 reg_poly_unpredictable_data_pos,
                                                                                 unpred_count_buffer, unpred_data_buffer,
                                                                                 est_unpred_count_per_index, params, reg_count,
-                                                                                reg_poly_count, compress_info);
+                                                                                reg_poly_count, compress_info, reg_params, reg_poly_params);
     unsigned char *compressed = NULL;
     // TODO: change to a better estimated size
     size_t est_size = size.num_elements * sizeof(T) * 1.2;
@@ -809,12 +814,16 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
 //	convertIntArray2ByteArray_fast_1b_to_result_sz(indicator, size.num_blocks, compressed_pos);
 
     if (reg_count) {
-        encode_regression_coefficients(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
-                                       reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
+//        write_variable_to_dst(compressed_pos, reg_count);
+//        write_array_to_dst(compressed_pos, reg_params, reg_count * RegCoeffNum3d);
+//        encode_regression_coefficients(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
+//                                       reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
     }
     if (reg_poly_count) {
-        encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
-                                       reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
+//        write_variable_to_dst(compressed_pos, reg_poly_count);
+//        write_array_to_dst(compressed_pos, reg_poly_params, reg_poly_count * RegPolyCoeffNum3d);
+//        encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
+//                                       reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
 
 #ifdef DUMP_PREDICTION_ERR_FOLDER
@@ -945,12 +954,12 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
 
     if (reg_count) {
         encode_regression_coefficients_v2(reg_params_type, reg_unpredictable_data, RegCoeffNum3d * reg_count,
-                                       reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
+                                          reg_unpredictable_data_pos - reg_unpredictable_data, compressed_pos);
 
     }
     if (reg_poly_count) {
         encode_regression_coefficients_v2(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
-                                       reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
+                                          reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
 
     }
 
