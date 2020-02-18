@@ -596,7 +596,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     compute_regression_coeffcients_3d_poly(z_data_pos, size_x, size_y, size_z, size.dim0_offset, size.dim1_offset,
                                                            reg_poly_params_pos, coef_aux_list);
                 }
-                int selection_result = sz_blockwise_selection_3d(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
+                int selection_result = sz_blockwise_selection_3d_v2(z_data_pos, mean_info, size.dim0_offset, size.dim1_offset,
                                                                  min_size, precision, reg_params_pos, reg_poly_params_pos,
                                                                  params.prediction_dim,
                                                                  params.use_lorenzo, params.use_lorenzo_2layer,
