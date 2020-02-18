@@ -64,6 +64,60 @@ sz_block_error_estimation_3d(const T * data_pos, const float * reg_params_pos, c
 }
 
 template<typename T>
+inline void
+sz_block_error_estimation_3d_v2(const T * data_pos, const float * reg_params_pos, const float * reg_poly_params_pos,
+                             const meanInfo<T>& mean_info, int x, int y, int z, size_t dim0_offset, size_t dim1_offset,
+                             T precision, double& err_lorenzo, double& err_lorenzo_2layer, double& err_reg, double& err_reg_poly, const int pred_dim,
+                             const bool use_lorenzo, const bool use_lorenzo_2layer,
+                             const bool use_regression, const bool use_regression_poly){
+    T noise = 0;
+    T noise_2layer = 0;
+    const T * cur_data_pos = data_pos + x*dim0_offset + y*dim1_offset + z;
+    T cur_data = *cur_data_pos;
+    if (use_regression) {
+        err_reg += std::pow(fabs(cur_data - regression_predict_3d<T>(reg_params_pos, x, y, z)), 2);
+    }
+    if (use_regression_poly) {
+        err_reg_poly += std::pow(fabs(cur_data - regression_predict_3d_poly<T>(reg_poly_params_pos, x, y, z)), 2);
+    }
+    double lorenzo_predict =0;
+    double lorenzo_2layer_predict =0;
+    if (pred_dim == 3) {
+        if (use_lorenzo_2layer) {
+            lorenzo_2layer_predict = lorenzo_predict_3d_2layer(cur_data_pos, dim0_offset, dim1_offset);
+            noise_2layer = Lorenze2LayerNoise3d * precision;
+        }
+        if (use_lorenzo){
+            lorenzo_predict = lorenzo_predict_3d(cur_data_pos, dim0_offset, dim1_offset);
+            noise = LorenzeNoise3d * precision;
+        }
+    } else if (pred_dim == 2) {
+        if (use_lorenzo_2layer) {
+            lorenzo_2layer_predict = lorenzo_predict_2d_2layer(cur_data_pos, dim0_offset, dim1_offset);
+            noise_2layer = Lorenze2LayerNoise2d * precision;
+
+        }
+        if (use_lorenzo){
+            lorenzo_predict = lorenzo_predict_2d(cur_data_pos, dim0_offset, dim1_offset);
+            noise = LorenzeNoise2d * precision;
+        }
+    } else {
+        if (use_lorenzo_2layer) {
+            lorenzo_2layer_predict = lorenzo_predict_1d_2layer(cur_data_pos, dim0_offset);
+            noise_2layer = Lorenze2LayerNoise1d * precision;
+
+        }
+        if (use_lorenzo){
+            lorenzo_predict = lorenzo_predict_1d(cur_data_pos, dim0_offset);
+            noise = LorenzeNoise1d * precision;
+        }
+    }
+    err_lorenzo += std::pow(mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_predict) + noise) : fabs(cur_data - lorenzo_predict) + noise, 2);
+    err_lorenzo_2layer += std::pow(mean_info.use_mean ? MIN(fabs(cur_data - mean_info.mean), fabs(cur_data - lorenzo_2layer_predict) + noise_2layer) : fabs(cur_data - lorenzo_2layer_predict) + noise_2layer, 2);
+}
+
+
+template<typename T>
 inline int
 sz_blockwise_selection_3d(const T * data_pos, const meanInfo<T>& mean_info, size_t dim0_offset, size_t dim1_offset, int min_size, float noise, const float * reg_params_pos){
     double err_reg = 0;
@@ -130,20 +184,16 @@ sz_blockwise_selection_3d_v2(const T *data_pos, const meanInfo<T> &mean_info, si
     double err_lorenzo_2layer = 0;
     double err_reg = 0;
     double err_reg_poly = poly_regression_noise;
-    for (int i = 2; i < min_size; i++) {
-        int bmi = min_size - i;
-        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, i, i, dim0_offset, dim1_offset,
-                                     precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim, use_lorenzo,
-                                     use_lorenzo_2layer, use_regression, use_poly_regression);
-        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, i, bmi, dim0_offset,
-                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
-                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
-        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, bmi, i, dim0_offset,
-                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
-                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
-        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, bmi, bmi, dim0_offset,
-                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
-                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
+    for (int i = 0; i < min_size; i++) {
+        for (int j = 0; j < min_size; j++) {
+            for (int k = 0; k < min_size; k++) {
+                sz_block_error_estimation_3d_v2(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, j, k, dim0_offset,
+                                             dim1_offset,
+                                             precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
+                                             use_lorenzo,
+                                             use_lorenzo_2layer, use_regression, use_poly_regression);
+            }
+        }
     }
     if (use_regression && (!use_lorenzo || err_reg <= err_lorenzo)
         && (!use_poly_regression || err_reg <= err_reg_poly)
