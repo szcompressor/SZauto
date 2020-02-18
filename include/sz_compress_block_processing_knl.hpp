@@ -50,16 +50,16 @@ block_pred_and_quant_regression_3d_knl(const T * data_pos, const float * reg_par
 
 template<typename T>
 inline void
-block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const float * reg_params_pos, T * buffer, T precision, T recip_precision, int capacity,
+block_pred_and_quant_regression_3d_with_buffer_knl_v2(const T * data_pos, const float * reg_params_pos, T * buffer, T precision, T recip_precision, int capacity,
 	int intv_radius, int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int lorenzo_layer, bool poly){
+	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int lorenzo_layer, bool poly, T * prediction){
 	for(int i=0; i<size_x; i++){
-		const T * cur_data_pos = data_pos + i*dim0_offset;
+//        const T *cur_data_pos = data_pos + i * dim0_offset;
 		// T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
         T *buffer_pos = buffer + (i + lorenzo_layer) * buffer_dim0_offset + lorenzo_layer * buffer_dim1_offset + lorenzo_layer;
 		for(int j=0; j<size_y; j++){
 			for(int k=0; k<size_z; k++){
-				T cur_data = cur_data_pos[j*dim1_offset + k];
+                T cur_data = data_pos[i * dim0_offset + j * dim1_offset + k];
 				T pred;
                 if (poly) {
                     pred = (T)(reg_params_pos[0]
@@ -72,7 +72,7 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
                                 reg_params_pos[3]);
                 }
 
-
+                prediction[i * dim0_offset + j * dim1_offset + k] = pred;
 				T diff = cur_data - pred;
 				int quant_index = (int) (fabs(diff) * recip_precision) + 1;
 				if(quant_index < capacity){
@@ -110,9 +110,9 @@ block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const flo
 
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
+block_pred_and_quant_lorenzo_3d_knl_1d_pred_v2(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
+	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer, T * prediction){
 	const T * cur_data_pos = data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
     T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
@@ -133,7 +133,8 @@ block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const 
 					}else{
                         pred = cur_buffer_pos[-1];
 					}
-					T diff = cur_data - pred;
+                    prediction[cur_data_pos + k - data_pos] = pred;
+                    T diff = cur_data - pred;
 					int quant_index = (int)(fabs(diff) * recip_precision) + 1;
 					if(quant_index < capacity){
 						quant_index >>= 1;
@@ -172,9 +173,9 @@ block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const 
 
 template<typename T>
 inline void
-block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
+block_pred_and_quant_lorenzo_3d_knl_2d_pred_v2(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
 	int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
-	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
+	size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer,T * prediction){
 	const T * cur_data_pos = data_pos;
 //	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
     T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
@@ -203,7 +204,8 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
                         pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim0_offset] - cur_buffer_pos[- 1 - buffer_dim0_offset];
 
                     }
-					T diff = cur_data - pred;
+                    prediction[cur_data_pos + k - data_pos] = pred;
+                    T diff = cur_data - pred;
 					int quant_index = (int)(fabs(diff) * recip_precision) + 1;
 					if(quant_index < capacity){
 						quant_index >>= 1;
@@ -242,6 +244,306 @@ block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const 
 		buffer_pos += buffer_dim0_offset - size_y*buffer_dim1_offset;
 		cur_data_pos += dim0_offset - size_y * dim1_offset;
 	}
+}
+
+template<typename T>
+inline void
+block_pred_and_quant_lorenzo_3d_knl_3d_pred_v2(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
+                                            int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
+                                            size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int padding_layer,
+                                            bool use_2layer,T * prediction){
+    const T * cur_data_pos = data_pos;
+    T *buffer_pos = buffer + padding_layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
+    for(int i=0; i<size_x; i++){
+        for(int j=0; j<size_y; j++){
+            for(int k=0; k<size_z; k++){
+                if(mean_info.use_mean && (fabs(cur_data_pos[k] - mean_info.mean) < precision)){
+                    type_pos[k] = 1;
+                    buffer_pos[k] = mean_info.mean;
+                }
+                else{
+                    T * cur_buffer_pos = buffer_pos + k;
+                    T cur_data = cur_data_pos[k];
+                    T pred;
+                    if (use_2layer) {
+                        pred = 2 * cur_buffer_pos[-1]
+                               - cur_buffer_pos[-2]
+                               + 2 * cur_buffer_pos[-buffer_dim1_offset]
+                               - 4 * cur_buffer_pos[-buffer_dim1_offset - 1]
+                               + 2 * cur_buffer_pos[-buffer_dim1_offset - 2]
+                               - cur_buffer_pos[-2 * buffer_dim1_offset]
+                               + 2 * cur_buffer_pos[-2 * buffer_dim1_offset - 1]
+                               - cur_buffer_pos[-2 * buffer_dim1_offset - 2]
+                               + 2 * cur_buffer_pos[-buffer_dim0_offset]
+                               - 4 * cur_buffer_pos[-buffer_dim0_offset - 1]
+                               + 2 * cur_buffer_pos[-buffer_dim0_offset - 2]
+                               - 4 * cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset]
+                               + 8 * cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset - 1]
+                               - 4 * cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset - 2]
+                               + 2 * cur_buffer_pos[-buffer_dim0_offset - 2 * buffer_dim1_offset]
+                               - 4 * cur_buffer_pos[-buffer_dim0_offset - 2 * buffer_dim1_offset - 1]
+                               + 2 * cur_buffer_pos[-buffer_dim0_offset - 2 * buffer_dim1_offset - 2]
+                               - cur_buffer_pos[-2 * buffer_dim0_offset]
+                               + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - 1]
+                               - cur_buffer_pos[-2 * buffer_dim0_offset - 2]
+                               + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - buffer_dim1_offset]
+                               - 4 * cur_buffer_pos[-2 * buffer_dim0_offset - buffer_dim1_offset - 1]
+                               + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - buffer_dim1_offset - 2]
+                               - cur_buffer_pos[-2 * buffer_dim0_offset - 2 * buffer_dim1_offset]
+                               + 2 * cur_buffer_pos[-2 * buffer_dim0_offset - 2 * buffer_dim1_offset - 1]
+                               - cur_buffer_pos[-2 * buffer_dim0_offset - 2 * buffer_dim1_offset - 2];
+                    } else {
+                        pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim1_offset] + cur_buffer_pos[-buffer_dim0_offset]
+                               - cur_buffer_pos[-buffer_dim1_offset - 1] - cur_buffer_pos[-buffer_dim0_offset - 1]
+                               - cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset] +
+                               cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset - 1];
+                    }
+                    prediction[cur_data_pos + k - data_pos] = pred;
+                    T diff = cur_data - pred;
+                    int quant_index = (int)(fabs(diff) * recip_precision) + 1;
+                    if(quant_index < capacity){
+                        quant_index >>= 1;
+                        int half_index = quant_index;
+                        quant_index <<= 1;
+                        if(diff < 0){
+                            quant_index = - quant_index;
+                            half_index = - half_index;
+                        }
+                        type_pos[k] = half_index + intv_radius;
+                        T decompressed_data = pred + (T)quant_index * precision;
+                        if(fabs(cur_data - decompressed_data) > precision){
+                            int index = j*size_z + k;
+                            unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                            unpred_count_buffer[index] ++;
+                            type_pos[k] = 0;
+                        }
+                        else *cur_buffer_pos = decompressed_data;
+                        if(cur_data_pos + k - ori_data_sp_float == -1){
+                            printf("compress index out of bound, data=%.4f, diff=%.4f, dec_data=%.4f, type=%d, quant_radius=%d, pred=%.4f\n", cur_data, fabs(cur_data - decompressed_data), decompressed_data, type_pos[k], intv_radius, pred);
+                            exit(0);
+                        }
+                    }
+                    else{
+                        int index = j*size_z + k;
+                        unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                        unpred_count_buffer[index] ++;
+                        type_pos[k] = 0;
+                    }
+                }
+            }
+            type_pos += size_z;
+            buffer_pos += buffer_dim1_offset;
+            cur_data_pos += dim1_offset;
+        }
+        buffer_pos += buffer_dim0_offset - size_y*buffer_dim1_offset;
+        cur_data_pos += dim0_offset - size_y * dim1_offset;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename T>
+inline void
+block_pred_and_quant_regression_3d_with_buffer_knl(const T * data_pos, const float * reg_params_pos, T * buffer, T precision, T recip_precision, int capacity,
+                                                   int intv_radius, int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
+                                                   size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int lorenzo_layer, bool poly){
+    for(int i=0; i<size_x; i++){
+//        const T *cur_data_pos = data_pos + i * dim0_offset;
+        // T * buffer_pos = buffer + (i+1)*buffer_dim0_offset + buffer_dim1_offset + 1;
+        T *buffer_pos = buffer + (i + lorenzo_layer) * buffer_dim0_offset + lorenzo_layer * buffer_dim1_offset + lorenzo_layer;
+        for(int j=0; j<size_y; j++){
+            for(int k=0; k<size_z; k++){
+                T cur_data = data_pos[i * dim0_offset + j * dim1_offset + k];
+                T pred;
+                if (poly) {
+                    pred = (T)(reg_params_pos[0]
+                               + reg_params_pos[1] * i + reg_params_pos[2] * j +  reg_params_pos[3] *  k
+                               + reg_params_pos[4] * i * i + reg_params_pos[5] * i * j + reg_params_pos[6] * i * k
+                               + reg_params_pos[7] * j * j + reg_params_pos[8] * j * k + reg_params_pos[9] * k * k);
+
+                } else {
+                    pred = (T) (reg_params_pos[0] * (float) i + reg_params_pos[1] * (float) j + reg_params_pos[2] * (float) k +
+                                reg_params_pos[3]);
+                }
+
+                T diff = cur_data - pred;
+                int quant_index = (int) (fabs(diff) * recip_precision) + 1;
+                if(quant_index < capacity){
+                    quant_index >>= 1;
+                    int half_index = quant_index;
+                    quant_index <<= 1;
+                    if(diff < 0){
+                        quant_index = - quant_index;
+                        type_pos[j*size_z + k] = intv_radius - half_index;
+                    }
+                    else type_pos[j*size_z + k] = intv_radius + half_index;
+                    T decompressed_data = pred + (T)quant_index * precision;
+                    if(fabs(cur_data - decompressed_data) > precision){
+                        int index = j*size_z + k;
+                        type_pos[index] = 0;
+                        unpred_buffer[index*offset + unpred_count_buffer[index]] = buffer_pos[j*buffer_dim1_offset + k] = cur_data;
+                        unpred_count_buffer[index] ++;
+                    }
+                    else buffer_pos[j*buffer_dim1_offset + k] = decompressed_data;
+                }
+                else{
+                    int index = j*size_z + k;
+                    type_pos[index] = 0;
+                    unpred_buffer[index*offset + unpred_count_buffer[index]] = buffer_pos[j*buffer_dim1_offset + k] = cur_data;
+                    unpred_count_buffer[index] ++;
+                }
+//			 	printf("element %.3f, predicted %.3f, quant %d\n", cur_data, pred, type_pos[j*size_z+k]);
+            }
+        }
+        type_pos += size_y * size_z;
+    }
+//    exit(0);
+
+}
+
+template<typename T>
+inline void
+block_pred_and_quant_lorenzo_3d_knl_1d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
+                                            int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
+                                            size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
+    const T * cur_data_pos = data_pos;
+//	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
+    T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
+
+    for(int i=0; i<size_x; i++){
+        for(int j=0; j<size_y; j++){
+            for(int k=0; k<size_z; k++){
+                if(mean_info.use_mean && (fabs(cur_data_pos[k] - mean_info.mean) < precision)){
+                    type_pos[k] = 1;
+                    buffer_pos[k] = mean_info.mean;
+                }
+                else{
+                    T * cur_buffer_pos = buffer_pos + k;
+                    T cur_data = cur_data_pos[k];
+                    T pred;
+                    if (use_2layer){
+                        pred = 2 * cur_buffer_pos[-1] - cur_buffer_pos[-2];
+                    }else{
+                        pred = cur_buffer_pos[-1];
+                    }
+                    T diff = cur_data - pred;
+                    int quant_index = (int)(fabs(diff) * recip_precision) + 1;
+                    if(quant_index < capacity){
+                        quant_index >>= 1;
+                        int half_index = quant_index;
+                        quant_index <<= 1;
+                        if(diff < 0){
+                            quant_index = - quant_index;
+                            half_index = - half_index;
+                        }
+                        type_pos[k] = half_index + intv_radius;
+                        T decompressed_data = pred + (T)quant_index * precision;
+                        if(fabs(cur_data - decompressed_data) > precision){
+                            int index = j*size_z + k;
+                            unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                            unpred_count_buffer[index] ++;
+                            type_pos[k] = 0;
+                        }
+                        else *cur_buffer_pos = decompressed_data;
+                    }
+                    else{
+                        int index = j*size_z + k;
+                        unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                        unpred_count_buffer[index] ++;
+                        type_pos[k] = 0;
+                    }
+                }
+            }
+            type_pos += size_z;
+            buffer_pos += buffer_dim1_offset;
+            cur_data_pos += dim1_offset;
+        }
+        buffer_pos += buffer_dim0_offset - size_y*buffer_dim1_offset;
+        cur_data_pos += dim0_offset - size_y * dim1_offset;
+    }
+}
+
+template<typename T>
+inline void
+block_pred_and_quant_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, const T * data_pos, T * buffer, T precision, T recip_precision, int capacity, int intv_radius,
+                                            int size_x, int size_y, int size_z, size_t buffer_dim0_offset, size_t buffer_dim1_offset,
+                                            size_t dim0_offset, size_t dim1_offset, int *& type_pos, int * unpred_count_buffer, T * unpred_buffer, size_t offset, int layer,bool use_2layer){
+    const T * cur_data_pos = data_pos;
+//	T * buffer_pos = buffer + buffer_dim0_offset + buffer_dim1_offset + 1;
+    T *buffer_pos = buffer + layer * (buffer_dim0_offset + buffer_dim1_offset + 1);
+
+    for(int i=0; i<size_x; i++){
+        for(int j=0; j<size_y; j++){
+            for(int k=0; k<size_z; k++){
+                if(mean_info.use_mean && (fabs(cur_data_pos[k] - mean_info.mean) < precision)){
+                    type_pos[k] = 1;
+                    buffer_pos[k] = mean_info.mean;
+                }
+                else{
+                    T * cur_buffer_pos = buffer_pos + k;
+                    T cur_data = cur_data_pos[k];
+                    T pred;
+                    if (use_2layer) {
+                        pred = 2 * cur_buffer_pos[-buffer_dim0_offset]
+                               - cur_buffer_pos[-2 * buffer_dim0_offset]
+                               + 2 * cur_buffer_pos[-1]
+                               - 4 * cur_buffer_pos[-1 - buffer_dim0_offset]
+                               + 2 * cur_buffer_pos[-1 - 2 * buffer_dim0_offset]
+                               - cur_buffer_pos[-2]
+                               + 2 * cur_buffer_pos[-2 - buffer_dim0_offset]
+                               - cur_buffer_pos[-2 - 2 * buffer_dim0_offset];
+                    }else{
+                        pred = cur_buffer_pos[-1] + cur_buffer_pos[-buffer_dim0_offset] - cur_buffer_pos[- 1 - buffer_dim0_offset];
+
+                    }
+                    T diff = cur_data - pred;
+                    int quant_index = (int)(fabs(diff) * recip_precision) + 1;
+                    if(quant_index < capacity){
+                        quant_index >>= 1;
+                        int half_index = quant_index;
+                        quant_index <<= 1;
+                        if(diff < 0){
+                            quant_index = - quant_index;
+                            half_index = - half_index;
+                        }
+                        type_pos[k] = half_index + intv_radius;
+                        T decompressed_data = pred + (T)quant_index * precision;
+                        if(fabs(cur_data - decompressed_data) > precision){
+                            int index = j*size_z + k;
+                            unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                            unpred_count_buffer[index] ++;
+                            type_pos[k] = 0;
+                        }
+                        else *cur_buffer_pos = decompressed_data;
+                        if(cur_data_pos + k - ori_data_sp_float == -1){
+                            printf("compress index out of bound, data=%.4f, diff=%.4f, dec_data=%.4f, type=%d, quant_radius=%d, pred=%.4f\n", cur_data, fabs(cur_data - decompressed_data), decompressed_data, type_pos[k], intv_radius, pred);
+                            exit(0);
+                        }
+                    }
+                    else{
+                        int index = j*size_z + k;
+                        unpred_buffer[index*offset + unpred_count_buffer[index]] = *cur_buffer_pos = cur_data;
+                        unpred_count_buffer[index] ++;
+                        type_pos[k] = 0;
+                    }
+                }
+            }
+            type_pos += size_z;
+            buffer_pos += buffer_dim1_offset;
+            cur_data_pos += dim1_offset;
+        }
+        buffer_pos += buffer_dim0_offset - size_y*buffer_dim1_offset;
+        cur_data_pos += dim0_offset - size_y * dim1_offset;
+    }
 }
 
 template<typename T>
@@ -336,6 +638,4 @@ block_pred_and_quant_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, const 
         cur_data_pos += dim0_offset - size_y * dim1_offset;
     }
 }
-
-
 #endif

@@ -121,6 +121,48 @@ sz_blockwise_selection_3d(const T *data_pos, const meanInfo<T> &mean_info, size_
 }
 
 template<typename T>
+inline int
+sz_blockwise_selection_3d_v2(const T *data_pos, const meanInfo<T> &mean_info, size_t dim0_offset, size_t dim1_offset, int min_size,
+                          T precision, const float *reg_params_pos, const float *reg_poly_params_pos, const int pred_dim,
+                          const bool use_lorenzo, const bool use_lorenzo_2layer, const bool use_regression,
+                          const bool use_poly_regression, float poly_regression_noise) {
+    double err_lorenzo = 0;
+    double err_lorenzo_2layer = 0;
+    double err_reg = 0;
+    double err_reg_poly = poly_regression_noise;
+    for (int i = 2; i < min_size; i++) {
+        int bmi = min_size - i;
+        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, i, i, dim0_offset, dim1_offset,
+                                     precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim, use_lorenzo,
+                                     use_lorenzo_2layer, use_regression, use_poly_regression);
+        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, i, bmi, dim0_offset,
+                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
+                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
+        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, bmi, i, dim0_offset,
+                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
+                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
+        sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, bmi, bmi, dim0_offset,
+                                     dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
+                                     use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
+    }
+    if (use_regression && (!use_lorenzo || err_reg <= err_lorenzo)
+        && (!use_poly_regression || err_reg <= err_reg_poly)
+        && (!use_lorenzo_2layer || err_reg < err_lorenzo_2layer)) {
+        return SELECTOR_REGRESSION;
+    } else if (use_poly_regression && (!use_lorenzo || err_reg_poly <= err_lorenzo)
+               && (!use_regression || err_reg_poly <= err_reg)
+               && (!use_lorenzo_2layer || err_reg_poly < err_lorenzo_2layer)) {
+        return SELECTOR_REGRESSION_POLY;
+    } else if (use_lorenzo_2layer && (!use_lorenzo || err_lorenzo_2layer <= err_lorenzo)
+               && (!use_regression || err_lorenzo_2layer <= err_reg)
+               && (!use_poly_regression || err_lorenzo_2layer < err_reg_poly)) {
+        return SELECTOR_LORENZO_2LAYER;
+    } else {
+        return SELECTOR_LORENZO;
+    }
+}
+
+template<typename T>
 inline void
 block_pred_and_quant_regression_3d(const T * data_pos, const float * reg_params_pos, double precision, double recip_precision, int capacity,
 	int intv_radius, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset, int *& type_pos, T *& unpredictable_data_pos){

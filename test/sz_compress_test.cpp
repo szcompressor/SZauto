@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
         params.capacity = capacity;
         params.filename = argv[1];
         params.eb = eb;
-        sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params, false);
+        sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, eb * (max - min), params, true);
         free(data);
         return 0;
     }
