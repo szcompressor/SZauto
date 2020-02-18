@@ -601,9 +601,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                 if (selection_result == SELECTOR_REGRESSION_POLY) {
 
                     // poly regression
-                    compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
-                                                          reg_poly_params_pos, reg_poly_params_type_pos,
-                                                          reg_poly_unpredictable_data_pos);
+//                    compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
+//                                                          reg_poly_params_pos, reg_poly_params_type_pos,
+//                                                          reg_poly_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_poly_params_pos, pred_buffer_pos,
                                                                        precision,
                                                                        recip_precision, capacity, intv_radius,
@@ -617,9 +617,9 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     reg_poly_params_type_pos += RegPolyCoeffNum3d;
                 } else if (selection_result == SELECTOR_REGRESSION) {
                     // regression
-                    compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
-                                                          reg_params_type_pos,
-                                                          reg_unpredictable_data_pos);
+//                    compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
+//                                                          reg_params_type_pos,
+//                                                          reg_unpredictable_data_pos);
                     block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision,
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
