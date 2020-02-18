@@ -184,9 +184,9 @@ sz_blockwise_selection_3d_v2(const T *data_pos, const meanInfo<T> &mean_info, si
     double err_lorenzo_2layer = 0;
     double err_reg = 0;
     double err_reg_poly = poly_regression_noise;
-    for (int i = 0; i < min_size; i++) {
-        for (int j = 0; j < min_size; j++) {
-            for (int k = 0; k < min_size; k++) {
+    for (int i = 1; i < min_size; i++) {
+        for (int j = 1; j < min_size; j++) {
+            for (int k = 1; k < min_size; k++) {
                 sz_block_error_estimation_3d_v2(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, i, j, k, dim0_offset,
                                              dim1_offset,
                                              precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
