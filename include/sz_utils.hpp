@@ -51,11 +51,10 @@ void writefile(char *file, Type *data, size_t num_elements) {
 template<typename Type>
 void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, double &nrmse) {
     size_t i = 0;
-    Type Max = 0, Min = 0, diffMax = 0;
-    Max = ori_data[0];
-    Min = ori_data[0];
-    diffMax = fabs(data[0] - ori_data[0]);
-    size_t k = 0;
+    double Max = ori_data[0];
+    double Min = ori_data[0];
+    double diffMax = fabs(data[0] - ori_data[0]);
+    double maxpw_relerr = fabs((data[0] - ori_data[0]) / ori_data[0]);
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < num_elements; i++) {
         sum1 += ori_data[i];
@@ -67,13 +66,12 @@ void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, doubl
     double sum3 = 0, sum4 = 0;
     double sum = 0, prodSum = 0, relerr = 0;
 
-    double maxpw_relerr = 0;
     for (i = 0; i < num_elements; i++) {
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
 
-        Type err = fabs(data[i] - ori_data[i]);
-        if (ori_data[i] != 0 && fabs(ori_data[i]) > 1) {
+        double err = fabs(data[i] - ori_data[i]);
+        if (ori_data[i] != 0) {
             relerr = err / fabs(ori_data[i]);
             if (maxpw_relerr < relerr)
                 maxpw_relerr = relerr;
@@ -97,10 +95,10 @@ void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, doubl
     nrmse = sqrt(mse) / range;
 
     printf("Min=%.20G, Max=%.20G, range=%.20G\n", Min, Max, range);
-    printf("Max absolute error = %.10f\n", diffMax);
-    printf("Max relative error = %f\n", diffMax / (Max - Min));
-    printf("Max pw relative error = %f\n", maxpw_relerr);
-    printf("PSNR = %f, NRMSE= %.20G\n", psnr, nrmse);
+    printf("Max absolute error = %.2G\n", diffMax);
+    printf("Max relative error = %.2G\n", diffMax / (Max - Min));
+    printf("Max pw relative error = %.2G\n", maxpw_relerr);
+    printf("PSNR = %f, NRMSE= %.10G\n", psnr, nrmse);
     printf("acEff=%f\n", acEff);
 
 }

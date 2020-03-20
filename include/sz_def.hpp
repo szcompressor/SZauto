@@ -98,7 +98,7 @@ struct sz_params {
         regression_param_eb_linear = reg_eb_base * precision / RegCoeffNum3d / (float) block_size;
         regression_param_eb_independent = reg_eb_1 * regression_param_eb_linear;
 
-        poly_regression_param_eb_poly = poly_reg_eb_base * reg_eb_base * precision / RegPolyCoeffNum3d / (float) block_size;
+        poly_regression_param_eb_poly = poly_reg_eb_base * precision / RegPolyCoeffNum3d / (float) block_size;
         poly_regression_param_eb_linear = poly_reg_eb_1 * poly_regression_param_eb_poly;
         poly_regression_param_eb_independent = poly_reg_eb_2 * poly_regression_param_eb_poly;
 
