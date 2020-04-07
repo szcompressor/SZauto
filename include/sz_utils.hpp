@@ -9,6 +9,7 @@
 #include <cmath>
 #include <ctime>
 
+
 template<typename Type>
 Type *readfile(const char *file, size_t &num) {
     std::ifstream fin(file, std::ios::binary);
@@ -49,11 +50,33 @@ void writefile(char *file, Type *data, size_t num_elements) {
 }
 
 template<typename Type>
+double autocorrelation1D(const Type *data, size_t numOfElem, Type avg) {
+    double cov = 0;
+    for (size_t i = 0; i < numOfElem; i++) {
+        cov += (data[i] - avg) * (data[i] - avg);
+    }
+    cov = cov / numOfElem;
+
+    if (cov == 0) {
+        return 0;
+    } else {
+        int delta = 1;
+        double sum = 0;
+
+        for (size_t i = 0; i < numOfElem - delta; i++) {
+            sum += (data[i] - avg) * (data[i + delta] - avg);
+        }
+        return sum / (numOfElem - delta) / cov;
+    }
+}
+
+template<typename Type>
 void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, double &nrmse) {
     size_t i = 0;
     double Max = ori_data[0];
     double Min = ori_data[0];
     double diffMax = fabs(data[0] - ori_data[0]);
+    double diff_sum = 0;
     double maxpw_relerr = fabs((data[0] - ori_data[0]) / ori_data[0]);
     double sum1 = 0, sum2 = 0;
     for (i = 0; i < num_elements; i++) {
@@ -66,10 +89,13 @@ void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, doubl
     double sum3 = 0, sum4 = 0;
     double sum = 0, prodSum = 0, relerr = 0;
 
+    double *diff = (double *) malloc(num_elements * sizeof(double));
+
     for (i = 0; i < num_elements; i++) {
+        diff[i] = data[i] - ori_data[i];
+        diff_sum += data[i] - ori_data[i];
         if (Max < ori_data[i]) Max = ori_data[i];
         if (Min > ori_data[i]) Min = ori_data[i];
-
         double err = fabs(data[i] - ori_data[i]);
         if (ori_data[i] != 0) {
             relerr = err / fabs(ori_data[i]);
@@ -100,7 +126,8 @@ void verify(Type *ori_data, Type *data, size_t num_elements, double &psnr, doubl
     printf("Max pw relative error = %.2G\n", maxpw_relerr);
     printf("PSNR = %f, NRMSE= %.10G\n", psnr, nrmse);
     printf("acEff=%f\n", acEff);
-
+    printf("errAutoCorr=%.10f\n", autocorrelation1D<double>(diff, num_elements, diff_sum / num_elements));
+    free(diff);
 }
 
 

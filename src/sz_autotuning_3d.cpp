@@ -153,7 +153,6 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
     {
         for (auto use_lorenzo:{true}) {
             for (auto use_lorenzo_2layer:{true, false}) {
-                //TODO kai
 //            for (auto use_lorenzo_2layer:{true}) {
                 if (use_lorenzo || use_lorenzo_2layer) {
                     list<int> pred_dim_set = {3, 2};
