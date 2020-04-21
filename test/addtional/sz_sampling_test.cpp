@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
 
     if (argc <= 6) {
         sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-        auto baseline_compress_info = sz_compress_decompress_highorder_3d<float>(data, num_elements, r1, r2, r3, precision,
-                                                                                 baseline_param, true);
+        auto baseline_compress_info = sz_compress_decompress_3d<float>(data, num_elements, r1, r2, r3, precision,
+                                                                       baseline_param, true);
         fprintf(stdout,
                 "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR:%.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
                 eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,

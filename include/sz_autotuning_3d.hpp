@@ -19,8 +19,8 @@ sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, int r3
 
 template<typename T>
 sz_compress_info
-sz_compress_decompress_highorder_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
-                                    sz_params params, bool use_decompress);
+sz_compress_decompress_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                          sz_params params, bool use_decompress);
 
 
 template<typename T>

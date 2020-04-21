@@ -12,8 +12,8 @@ using namespace std;
 
 
 template<typename T>
-sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
-                                                     sz_params params, bool use_decompress) {
+sz_compress_info sz_compress_decompress_3d(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                                           sz_params params, bool use_decompress) {
     size_t result_size = 0;
     sz_compress_info compressInfo;
 
@@ -22,7 +22,10 @@ sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_element
 
     unsigned char *result = sz_compress_3d_knl_2<T>(data, r1, r2, r3, precision, result_size, params, compressInfo);
     unsigned char *result_after_lossless = NULL;
+//    size_t lossless_outsize = result_size;
     size_t lossless_outsize = sz_lossless_compress(ZSTD_COMPRESSOR, 3, result, result_size, &result_after_lossless);
+    free(result);
+
     clock_gettime(CLOCK_REALTIME, &end);
     compressInfo.compress_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
     cout << "Compression time: " << compressInfo.compress_time << "s" << endl;
@@ -34,7 +37,6 @@ sz_compress_info sz_compress_decompress_highorder_3d(T *data, size_t num_element
     cout << "Compressed size = " << lossless_outsize << endl;
     cout << "!!!!!!!!!!!!!!!!!!!!! ratio  !!!!!!!!!!!!!= " << ratio << endl;
 
-    free(result);
 
     if (use_decompress) {
         clock_gettime(CLOCK_REALTIME, &start);
@@ -128,8 +130,8 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 
     if (baseline) {
         sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-        auto baseline_compress_info = sz_compress_decompress_highorder_3d<T>(data, num_elements, r1, r2, r3, precision,
-                                                                             baseline_param, true);
+        auto baseline_compress_info = sz_compress_decompress_3d<T>(data, num_elements, r1, r2, r3, precision,
+                                                                   baseline_param, true);
         fprintf(stdout,
                 "Baseline: reb:%.1e, ratio:%.2f, compress_time:%.3f, PSNR:%.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
                 relative_eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
@@ -332,8 +334,8 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
     clock_gettime(CLOCK_REALTIME, &end);
     float sample_time = (float) (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / (double) 1000000000;
     if (decompress) {
-        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3,
-                                                                 true);
+        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3,
+                                                       true);
         fprintf(stdout,
                 "FINAL: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e, sample_time:%.1f, sample_num:%d, %s\n",
                 relative_eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
@@ -362,7 +364,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 //                for (auto pred_dim: pred_dim_set) {
 //                    sz_params params(false, 6, pred_dim, 0, use_lorenzo,
 //                                     use_lorenzo_2layer, false, false, precision);
-//                    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, params,
+//                    auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, params,
 //                                                                             false);
 //
 //                    sprintf(buffer,
@@ -421,7 +423,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 //                                                         poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2,
 //                                                         poly_reg_noise);
 //
-//                                        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
+//                                        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3,
 //                                                                                                 precision,
 //                                                                                                 params, false);
 //                                        sprintf(buffer,
@@ -462,7 +464,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 //    sz_params best_params_stage3;
 //    for (auto capacity:capacity_set) {
 //        best_params_stage2.capacity = capacity;
-//        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage2,
+//        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, best_params_stage2,
 //                                                                 true);
 //        fprintf(stderr,
 //                "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
@@ -475,7 +477,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 //            best_params_stage3 = best_params_stage2;
 //        }
 //    }
-//    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
+//    auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
 //    fprintf(stderr,
 //            "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
 //            eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
@@ -486,7 +488,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
 //
 //
 //    sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-//    auto baseline_compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, baseline_param,
+//    auto baseline_compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, baseline_param,
 //                                                                      true);
 //    fprintf(stderr,
 //            "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
@@ -510,8 +512,8 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
                 for (auto pred_dim: pred_dim_set) {
                     sz_params params(false, 6, pred_dim, 0, use_lorenzo,
                                      use_lorenzo_2layer, false, false, precision);
-                    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, params,
-                                                                             false);
+                    auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, params,
+                                                                   false);
 
                     sprintf(buffer,
                             "stage:0, ratio: %.1f, reb:%.1e, compress_time:%.1f, PSNR= %.1f, lorenzo:%d, lorenzo2:%d, pred_dim:%d\n",
@@ -570,10 +572,10 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
                                                                      poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2,
                                                                      poly_reg_noise);
 
-                                                    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements,
-                                                                                                             r1, r2, r3,
-                                                                                                             precision,
-                                                                                                             params, false);
+                                                    auto compress_info = sz_compress_decompress_3d(data, num_elements,
+                                                                                                   r1, r2, r3,
+                                                                                                   precision,
+                                                                                                   params, false);
                                                     sprintf(buffer,
                                                             "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
                                                             "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise:%.3f, "
@@ -645,9 +647,9 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
                                                          poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2,
                                                          poly_reg_noise);
 
-                                        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
-                                                                                                 precision,
-                                                                                                 params, false);
+                                        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3,
+                                                                                       precision,
+                                                                                       params, false);
                                         sprintf(buffer,
                                                 "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
                                                 "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise:%.3f, "
@@ -723,9 +725,9 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
                                                          poly_reg_eb_base, poly_reg_eb_1, poly_reg_eb_2,
                                                          poly_reg_noise);
 
-                                        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
-                                                                                                 precision,
-                                                                                                 params, false);
+                                        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3,
+                                                                                       precision,
+                                                                                       params, false);
                                         sprintf(buffer,
                                                 "lorenzo:%d, lorenzo2:%d, regression:%d, regression2:%d, "
                                                 "block_size:%d, pred_dim:%d, reg_base:%.1f, reg_1: %.1f, poly_base:%.1f, poly_1:%.1f, poly_2:%.1f, poly_noise:%.3f, "
@@ -765,8 +767,8 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
     sz_params best_params_stage3;
     for (auto capacity:capacity_set) {
         best_params_stage2.capacity = capacity;
-        auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage2,
-                                                                 true);
+        auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, best_params_stage2,
+                                                       true);
         fprintf(stderr,
                 "stage:3, reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
                 eb, compress_info.ratio, compress_info.compress_time, capacity, compress_info.psnr, compress_info.nrmse,
@@ -778,7 +780,7 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
             best_params_stage3 = best_params_stage2;
         }
     }
-    auto compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
+    auto compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, best_params_stage3, true);
     fprintf(stderr,
             "FINAL: reb:%.1e, ratio %.2f, compress_time:%.1f, capacity:%d, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld, %s\n",
             eb, compress_info.ratio, compress_info.compress_time, best_params_stage3.capacity, compress_info.psnr,
@@ -789,8 +791,8 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
 
 
     sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
-    auto baseline_compress_info = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3, precision, baseline_param,
-                                                                      true);
+    auto baseline_compress_info = sz_compress_decompress_3d(data, num_elements, r1, r2, r3, precision, baseline_param,
+                                                            true);
     fprintf(stderr,
             "Baseline: reb:%.1e, ratio %.2f, compress_time:%.1f, PSNR %.2f, NRMSE %.10e Ori_bytes %ld, Compressed_bytes %ld\n",
             eb, baseline_compress_info.ratio, baseline_compress_info.compress_time, baseline_compress_info.psnr,
@@ -815,7 +817,7 @@ sz_compress_manualtuning_3d(float *data, size_t num_elements, int r1, int r2, in
 
 template
 sz_compress_info
-sz_compress_decompress_highorder_3d(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+sz_compress_decompress_3d(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                     sz_params params, bool use_decompress);
 
 template

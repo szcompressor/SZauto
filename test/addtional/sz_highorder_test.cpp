@@ -29,9 +29,9 @@ int main(int argc, char **argv) {
                               false, true, eb * (max - min));
         params_high.filename = argv[1];
         params_high.eb = eb;
-        sz_compress_info compress_info_high = sz_compress_decompress_highorder_3d(data, num_elements, r1, r2, r3,
-                                                                                  eb * (max - min), params_high,
-                                                                                  true);
+        sz_compress_info compress_info_high = sz_compress_decompress_3d(data, num_elements, r1, r2, r3,
+                                                                        eb * (max - min), params_high,
+                                                                        true);
         fprintf(stdout,
                 "FINAL: reb:%.1e, ratio %.2f, compress_time:%.3f, capacity:%d, PSNR:%.2f, NRMSE %.10e\n",
                 eb, compress_info_high.ratio,
