@@ -504,10 +504,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                                                             size_t offset, const sz_params &params,
                                                                             size_t &reg_count,
                                                                             size_t &reg_poly_count,
-                                                                            sz_compress_info &compress_info,
-                                                                            float *reg_params,
-                                                                            float *reg_poly_params,
-                                                                            T* prediction) {
+                                                                            sz_compress_info &compress_info) {
     reg_count = 0;
     reg_poly_count = 0;
     size_t lorenzo_count = 0;
@@ -516,14 +513,14 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
     int *type_pos = type;
     int *indicator_pos = indicator;
 
-//    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
     for (int i = 0; i < RegCoeffNum3d; i++) {
         reg_params[i] = 0;
     }
     float *reg_params_pos = reg_params + RegCoeffNum3d;
     int *reg_params_type_pos = reg_params_type;
 
-//    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
+    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
     for (int i = 0; i < RegPolyCoeffNum3d; i++) {
         reg_poly_params[i] = 0;
     }
@@ -563,11 +560,10 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
     memset(pred_buffer, 0, (size.block_size + params.lorenzo_padding_layer) * (size.d2 + params.lorenzo_padding_layer) *
                            (size.d3 + params.lorenzo_padding_layer) * sizeof(T));
     int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
-    auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred_v2<T>;
-    if (params.prediction_dim == 2) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_2d_pred_v2<T>;
-    else if (params.prediction_dim == 1) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_1d_pred_v2<T>;
+    auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred<T>;
+    if (params.prediction_dim == 2) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_2d_pred<T>;
+    else if (params.prediction_dim == 1) lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_1d_pred<T>;
     T recip_precision = (T) 1.0 / precision;
-    T *prediction_pos = prediction;
 
     const T *x_data_pos = data;
     for (size_t i = 0; i < size.num_x; i++) {
@@ -576,8 +572,6 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
         for (size_t j = 0; j < size.num_y; j++) {
             const T *z_data_pos = y_data_pos;
             for (size_t k = 0; k < size.num_z; k++) {
-                prediction_pos = prediction + (z_data_pos - data);
-
                 int size_x = ((i + 1) * size.block_size < size.d1) ? size.block_size : size.d1 - i * size.block_size;
                 int size_y = ((j + 1) * size.block_size < size.d2) ? size.block_size : size.d2 - j * size.block_size;
                 int size_z = ((k + 1) * size.block_size < size.d3) ? size.block_size : size.d3 - k * size.block_size;
@@ -608,13 +602,13 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     compress_regression_coefficient_3d_v2(RegPolyCoeffNum3d, reg_poly_precisions, reg_poly_recip_precisions,
                                                           reg_poly_params_pos, reg_poly_params_type_pos,
                                                           reg_poly_unpredictable_data_pos);
-                    block_pred_and_quant_regression_3d_with_buffer_knl_v2(z_data_pos, reg_poly_params_pos, pred_buffer_pos,
+                    block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_poly_params_pos, pred_buffer_pos,
                                                                        precision,
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
                                                                        buffer_dim1_offset, size.dim0_offset, size.dim1_offset,
                                                                        type_pos, unpred_count_buffer, unpred_data_buffer, offset,
-                                                                       params.lorenzo_padding_layer, true, prediction_pos);
+                                                                       params.lorenzo_padding_layer, true);
 
                     reg_poly_count++;
                     reg_poly_params_pos += RegPolyCoeffNum3d;
@@ -624,12 +618,12 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                     compress_regression_coefficient_3d_v2(RegCoeffNum3d, reg_precisions, reg_recip_precisions, reg_params_pos,
                                                           reg_params_type_pos,
                                                           reg_unpredictable_data_pos);
-                    block_pred_and_quant_regression_3d_with_buffer_knl_v2(z_data_pos, reg_params_pos, pred_buffer_pos, precision,
+                    block_pred_and_quant_regression_3d_with_buffer_knl(z_data_pos, reg_params_pos, pred_buffer_pos, precision,
                                                                        recip_precision, capacity, intv_radius,
                                                                        size_x, size_y, size_z, buffer_dim0_offset,
                                                                        buffer_dim1_offset, size.dim0_offset, size.dim1_offset,
                                                                        type_pos, unpred_count_buffer, unpred_data_buffer, offset,
-                                                                       params.lorenzo_padding_layer, false, prediction_pos);
+                                                                       params.lorenzo_padding_layer, false);
                     reg_count++;
                     reg_params_pos += RegCoeffNum3d;
                     reg_params_type_pos += RegCoeffNum3d;
@@ -639,7 +633,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
                                            intv_radius,
                                            size_x, size_y, size_z, buffer_dim0_offset, buffer_dim1_offset, size.dim0_offset,
                                            size.dim1_offset, type_pos, unpred_count_buffer, unpred_data_buffer, offset,
-                                           params.lorenzo_padding_layer, (selection_result == SELECTOR_LORENZO_2LAYER),prediction_pos);
+                                           params.lorenzo_padding_layer, (selection_result == SELECTOR_LORENZO_2LAYER));
                     if (selection_result == SELECTOR_LORENZO_2LAYER) {
                         lorenzo_2layer_count++;
                     } else {
@@ -659,6 +653,8 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
         x_data_pos += size.block_size * size.dim0_offset;
     }
     free(pred_buffer);
+    free(reg_params);
+    free(reg_poly_params);
 
 //    printf("block %ld; lorenzo %ld, lorenzo_2layer %ld, regression %ld, poly regression %ld\n", size.num_blocks,
 //           lorenzo_count, lorenzo_2layer_count, reg_count, reg_poly_count);
@@ -778,10 +774,6 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
     // predict and quant on KNL
     T precision_t = (T) precision;
     size_t reg_count = 0, reg_poly_count = 0;
-    float *reg_params = (float *) malloc(RegCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
-    float *reg_poly_params = (float *) malloc(RegPolyCoeffNum3d * (size.num_blocks + 1) * sizeof(float));
-    T *prediction = (T *) malloc(size.num_elements * sizeof(T));
-
     prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(data, size, mean_info,
                                                                                 precision_t, capacity, intv_radius, indicator,
                                                                                 type, reg_params_type, reg_unpredictable_data_pos,
@@ -789,7 +781,7 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
                                                                                 reg_poly_unpredictable_data_pos,
                                                                                 unpred_count_buffer, unpred_data_buffer,
                                                                                 est_unpred_count_per_index, params, reg_count,
-                                                                                reg_poly_count, compress_info, reg_params, reg_poly_params, prediction);
+                                                                                reg_poly_count, compress_info);
     unsigned char *compressed = NULL;
     // TODO: change to a better estimated size
     size_t est_size = size.num_elements * sizeof(T) * 1.2;
@@ -824,25 +816,18 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
         encode_regression_coefficients(reg_poly_params_type, reg_poly_unpredictable_data, RegPolyCoeffNum3d * reg_poly_count,
                                        reg_poly_unpredictable_data_pos - reg_poly_unpredictable_data, compressed_pos);
     }
-    free(reg_params);
-    free(reg_poly_params);
 
-//    verify((T*)data, prediction, size.num_elements);
 #ifdef DUMP_PREDICTION_ERR_FOLDER
     char filename[300];
+    T *prediction_err = (T *) malloc(size.num_elements * sizeof(T));
     string input_name(params.filename);
     auto input_names = split(input_name, '/');
-    sprintf(filename, "%s/%s_%s_%.1e_l(%d)_l2(%d)_r(%d)_r2(%d).quan_bin.dat", DUMP_PREDICTION_ERR_FOLDER, input_names[input_names.size() - 2].data(),
+    sprintf(filename, "%s/%s_%s_%.1e_l(%d)_l2(%d)_r(%d)_r2(%d).out", DUMP_PREDICTION_ERR_FOLDER, input_names[input_names.size() - 2].data(),
             input_names[input_names.size() - 1].data(), params.eb, params.use_lorenzo,
             params.use_lorenzo_2layer, params.use_regression_linear, params.use_poly_regression);
     printf("write file %s\n", filename);
     writefile(filename, type, size.num_elements);
-
-    sprintf(filename, "%s/%s_%s_%.1e_l(%d)_l2(%d)_r(%d)_r2(%d).pred.dat", DUMP_PREDICTION_ERR_FOLDER, input_names[input_names.size() - 2].data(),
-            input_names[input_names.size() - 1].data(), params.eb, params.use_lorenzo,
-            params.use_lorenzo_2layer, params.use_regression_linear, params.use_poly_regression);
-    printf("write file %s\n", filename);
-    writefile(filename, prediction, size.num_elements);
+    free(prediction_err);
 #endif
 
     Huffman_encode_tree_and_data(2 * capacity, type, size.num_elements, compressed_pos);
@@ -853,7 +838,6 @@ sz_compress_3d_knl_2(const T *data, size_t r1, size_t r2, size_t r3, double prec
     free(reg_poly_params_type);
     free(reg_unpredictable_data);
     free(reg_poly_unpredictable_data);
-    free(prediction);
     free(type);
     return compressed;
 }
