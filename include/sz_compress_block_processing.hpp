@@ -173,7 +173,8 @@ sz_blockwise_selection_3d(const T *data_pos, const meanInfo<T> &mean_info, size_
                                      dim1_offset, precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim,
                                      use_lorenzo, use_lorenzo_2layer, use_regression, use_poly_regression);
     }
-    sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, min_size, min_size, min_size, dim0_offset, dim1_offset,
+    sz_block_error_estimation_3d(data_pos, reg_params_pos, reg_poly_params_pos, mean_info, min_size - 1, min_size - 1,
+                                 min_size - 1, dim0_offset, dim1_offset,
                                  precision, err_lorenzo, err_lorenzo_2layer, err_reg, err_reg_poly, pred_dim, use_lorenzo,
                                  use_lorenzo_2layer, use_regression, use_poly_regression);
 
