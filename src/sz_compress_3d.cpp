@@ -332,7 +332,7 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     for (int i = 0; i < 10; i++) {
         reg_poly_recip_precisions[i] = 1.0 / reg_poly_precisions[i];
     }
-    std::vector<std::array<T, 100>> coef_aux_list = init_poly<T>();
+    std::vector<std::array<float, 100>> coef_aux_list = init_poly();
 
     int capacity_lorenzo = mean_info.use_mean ? capacity - 2 : capacity;
     auto *lorenzo_pred_and_quant = block_pred_and_quant_lorenzo_3d_knl_3d_pred<T>;
@@ -549,7 +549,7 @@ prediction_and_quantization_3d_with_border_predicition_and_knl_optimization(cons
     for (int i = 0; i < 10; i++) {
         reg_poly_recip_precisions[i] = 1.0 / reg_poly_precisions[i];
     }
-    std::vector<std::array<T, 100>> coef_aux_list = init_poly<T>();
+    std::vector<std::array<float, 100>> coef_aux_list = init_poly();
 
     // maintain a buffer of (block_size+1)*(r2+1)*(r3+1)
     // 2-layer use_lorenzo
@@ -847,6 +847,11 @@ unsigned char *
 sz_compress_3d_knl_2<float>(const float *data, size_t r1, size_t r2, size_t r3, double precision, size_t &compressed_size,
                             const sz_params &params, sz_compress_info &compress_info);
 
+template
+unsigned char *
+sz_compress_3d_knl_2<double>(const double *data, size_t r1, size_t r2, size_t r3, double precision, size_t &compressed_size,
+                            const sz_params &params, sz_compress_info &compress_info);
+
 template<typename T>
 unsigned char *
 sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double precision, size_t &compressed_size,
@@ -974,4 +979,9 @@ sz_compress_3d_sampling(const T *data, size_t r1, size_t r2, size_t r3, double p
 template
 unsigned char *
 sz_compress_3d_sampling<float>(const float *data, size_t r1, size_t r2, size_t r3, double precision, size_t &compressed_size,
+                               const sz_params &params, sz_compress_info &compress_info);
+
+template
+unsigned char *
+sz_compress_3d_sampling<double>(const double *data, size_t r1, size_t r2, size_t r3, double precision, size_t &compressed_size,
                                const sz_params &params, sz_compress_info &compress_info);

@@ -27,11 +27,11 @@ void display_coef_aux(std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d> aux) 
     }
 }
 
-template<typename T>
-std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
+//template<typename T>
+std::vector<std::array<float, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
 
     size_t num = 0;
-    T* data;
+    float* data;
 #ifdef POLY_REGRESSION_COEF_FILE
     data = readfile<float>(POLY_REGRESSION_COEF_FILE, num);
 #else
@@ -40,7 +40,7 @@ std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> init_poly() {
 #endif
 
     auto coef_aux_p = &data[0];
-    std::vector<std::array<T, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> coef_aux_list = std::vector<std::array<T,
+    std::vector<std::array<float, RegPolyCoeffNum3d * RegPolyCoeffNum3d>> coef_aux_list = std::vector<std::array<float,
             RegPolyCoeffNum3d * RegPolyCoeffNum3d>>(
             (COEF_AUX_MAX_BLOCK + 1) * (COEF_AUX_MAX_BLOCK + 1) * (COEF_AUX_MAX_BLOCK + 1), {0});
     while (coef_aux_p < &data[0] + num) {
@@ -95,7 +95,7 @@ compute_regression_coeffcients_3d(const T * data_pos, int size_x, int size_y, in
 template <typename T>
 inline void
 compute_regression_coeffcients_3d_poly(const T * data_pos, int size_x, int size_y, int size_z, size_t dim0_offset, size_t dim1_offset,
-        float * reg_params_pos, std::vector<std::array<T, 100>> &coef_aux_list){
+        float * reg_params_pos, std::vector<std::array<float, 100>> &coef_aux_list){
 
     std::array<size_t, 3> dims = {(size_t) size_x, (size_t) size_y, (size_t) size_z};
     std::array<double, RegPolyCoeffNum3d> sum{0};

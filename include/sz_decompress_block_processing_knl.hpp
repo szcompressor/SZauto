@@ -150,10 +150,10 @@ block_pred_and_decompress_lorenzo_3d_knl_2d_pred(const meanInfo<T>& mean_info, T
                                    cur_buffer_pos[-1 - buffer_dim0_offset];
                         }
 						cur_data_pos[k] = *cur_buffer_pos = pred + (T)(2 * (type_val - intv_radius)) * precision;
-						if(cur_data_pos + k - dec_data_sp_float == -1){
-							printf("index out of bound, dec_data=%.4f, type=%d, pred=%.4f\n", *cur_buffer_pos, type_val, pred);
-							exit(0);
-						}
+//						if(cur_data_pos + k - dec_data_sp_float == -1){
+//							printf("index out of bound, dec_data=%.4f, type=%d, pred=%.4f\n", *cur_buffer_pos, type_val, pred);
+//							exit(0);
+//						}
 					}
 				}
 			}
@@ -222,10 +222,10 @@ block_pred_and_decompress_lorenzo_3d_knl_3d_pred(const meanInfo<T>& mean_info, T
                                    cur_buffer_pos[-buffer_dim0_offset - buffer_dim1_offset - 1];
                         }
 						cur_data_pos[k] = *cur_buffer_pos = pred + (T)(2 * (type_val - intv_radius)) * precision;
-						if(cur_data_pos + k - dec_data_sp_float == -1){
-							printf("index out of bound, dec_data=%.4f, type=%d, pred=%.4f\n", *cur_buffer_pos, type_val, pred);
-							exit(0);
-						}
+//						if(cur_data_pos + k - dec_data_sp_float == -1){
+//							printf("index out of bound, dec_data=%.4f, type=%d, pred=%.4f\n", *cur_buffer_pos, type_val, pred);
+//							exit(0);
+//						}
 					}
 				}
 			}

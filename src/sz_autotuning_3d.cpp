@@ -812,6 +812,15 @@ float *
 sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, int r1, int r2, int r3);
 
 template
+unsigned char *
+sz_compress_autotuning_3d(double *data, size_t r1, size_t r2, size_t r3, double relative_eb, size_t &compressed_size,
+                          bool baseline = false, bool decompress = false, bool log = false, float sample_ratio = 0.05);
+
+template
+double *
+sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, int r1, int r2, int r3);
+
+template
 void
 sz_compress_manualtuning_3d(float *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision);
 
@@ -819,7 +828,15 @@ template
 sz_compress_info
 sz_compress_decompress_3d(float *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                     sz_params params, bool use_decompress);
+template
+sz_compress_info
+sz_compress_decompress_3d(double *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                          sz_params params, bool use_decompress);
 
 template
 sz_compress_info do_compress_sampling(const float *data, size_t num_elements, int r1, int r2, int r3, float precision,
+                                      sz_params params);
+
+template
+sz_compress_info do_compress_sampling(const double *data, size_t num_elements, int r1, int r2, int r3, float precision,
                                       sz_params params);

@@ -304,5 +304,9 @@ template
 float *
 sz_decompress_3d_knl<float>(const unsigned char * compressed, size_t r1, size_t r2, size_t r3);
 
+template
+double *
+sz_decompress_3d_knl<double>(const unsigned char * compressed, size_t r1, size_t r2, size_t r3);
+
 
 

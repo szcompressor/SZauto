@@ -13,6 +13,7 @@ template<typename T>
 T *
 sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, int r1, int r2, int r3);
 
+
 template<typename T>
 void
 sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, int r3, float eb, float precision);

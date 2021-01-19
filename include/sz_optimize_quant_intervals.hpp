@@ -76,7 +76,7 @@ optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double p
 	size_t offset_count_2 = 0;
 	size_t r23 = r2 * r3;
 	size_t len = r1 * r23;
-	const float *data_pos = data + r23 + r3 + offset_count;
+	const T *data_pos = data + r23 + r3 + offset_count;
 	size_t n1_count = 1, n2_count = 1; // count i,j sum
 	T pred_value = 0;
 	double mean_diff = 0;
