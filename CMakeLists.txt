@@ -14,3 +14,10 @@ set(ZSTD_INCLUDES "$ENV{HOME}/tools/zstd-1.4.4/install/include")
 add_subdirectory (src)
 add_subdirectory (test)
 
+file(GLOB header_files ${PROJECT_SOURCE_DIR}/include/*.hpp)
+install(FILES ${header_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/szauto)
+install (TARGETS sz_autotuning EXPORT szauto
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+        )
+
+install (EXPORT szauto DESTINATION ${CMAKE_INSTALL_PREFIX}/share/szauto/cmake)
