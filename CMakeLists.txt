@@ -16,7 +16,7 @@ add_subdirectory (test)
 
 file(GLOB header_files ${PROJECT_SOURCE_DIR}/include/*.hpp)
 install(FILES ${header_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/szauto)
-install (TARGETS sz_autotuning EXPORT szauto
+install (TARGETS sz_cpp EXPORT szauto
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         )
 
