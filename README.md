@@ -1,4 +1,4 @@
-SZ3: A Modular Error-bounded Lossy Compression Framework for Scientific Datasets
+SZauto: SZ C++ Version that Supports Second-Order Prediction and Parameter Optimization
 =====
 (C) 2016 by Mathematics and Computer Science (MCS), Argonne National Laboratory.
 See COPYRIGHT in top-level directory.
@@ -30,4 +30,4 @@ See COPYRIGHT in top-level directory.
 
 Version		New features
 
-* SZauto 1.0.0  SZ3 is the C++ version of SZ with modular and composable design.
+* SZauto 1.0.0  First release
