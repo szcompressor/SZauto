@@ -1,23 +1,41 @@
 cmake_minimum_required (VERSION 3.0)
-project(SZauto)
-set (SZauto_VERSION_MAJOR 1)
-set (SZauto_VERSION_MINOR 0)
-set (CMAKE_CXX_STANDARD 14)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set (CMAKE_CXX_FLAGS "-g -O3")
+project(SZauto VERSION "1.0")
+set (SZauto_VERSION_MAJOR ${CMAKE_PROJECT_VERSION_MAJOR})
+set (SZauto_VERSION_MINOR ${CMAKE_PROJECT_VERSION_MINOR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-add_definitions(-DPOLY_REGRESSION_COEF_FILE="${CMAKE_CURRENT_SOURCE_DIR}/data/PolyRegressionCoefAux3D.f32")
-#add_definitions(-DDUMP_PREDICTION_ERR_FOLDER="$ENV{HOME}/Documents/Workspace/sz-kai/autotunning/highorder/prediction_err/")
 
-find_library(ZSTD_LIBS zstd HINTS "$ENV{HOME}/tools/zstd-1.4.4/install/lib")
-set(ZSTD_INCLUDES "$ENV{HOME}/tools/zstd-1.4.4/install/include")
+#correct was to set a default build type
+# https://blog.kitware.com/cmake-and-the-default-build-type/
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "No build type was set. Setting build type to ${default_build_type}.")
+  set(CMAKE_BUILD_TYPE ${default_build_type} CACHE 
+    STRING "Choose the type to build" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+
+include(GNUInstallDirs)
+include(CheckCXXCompilerFlag)
+include(CTest)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+option(BUILD_SHARED_LIBS "build testsz as a shared library" ON)
+
+check_cxx_compiler_flag("-fno-omit-frame-pointer" HAVE_NO_OMIT_FRAME_POINTER)
+set(NO_OMIT_FRAME_POINTER_FLAG "")
+if(HAVE_NO_OMIT_FRAME_POINTER)
+  set(NO_OMIT_FRAME_POINTER_FLAG "-fno-omit-frame-pointer")
+endif()
+
+
+
+find_package(PkgConfig)
+pkg_search_module(ZSTD IMPORTED_TARGET libzstd)
+
 add_subdirectory (src)
-add_subdirectory (test)
 
-file(GLOB header_files ${PROJECT_SOURCE_DIR}/include/*.hpp)
-install(FILES ${header_files} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/szauto)
-install (TARGETS sz_cpp EXPORT szauto
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-        )
+if(BUILD_TESTING)
+  add_subdirectory (test)
+endif()
 
-install (EXPORT szauto DESTINATION ${CMAKE_INSTALL_PREFIX}/share/szauto/cmake)
