@@ -20,7 +20,7 @@ See COPYRIGHT in top-level directory.
 
 * Point-wise relative error bound mode (i.e., PW_REL): Xin Liang, Sheng Di, Dingwen Tao, Zizhong Chen, Franck Cappello, "[An Efficient Transformation Scheme for Lossy Data Compression with Point-wise Relative Error Bound](https://ieeexplore.ieee.org/document/8514879)", in IEEE International Conference on Clustering Computing (CLUSTER 2018), Belfast, UK, 2018. (Best Paper)
 ## 3rd party libraries/tools
-* Zstandard (https://facebook.github.io/zstd/). Please change ZSTD_LIBS and ZSTD_INCLUDES settings in CMakeLists.txt
+* Zstandard (https://facebook.github.io/zstd/). Please make sure Zstandard can be found by pkg-config.
 ## Installation
 
 ## Testing Examples

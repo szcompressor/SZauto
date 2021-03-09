@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.9)
 project(SZauto VERSION "1.0")
 set (SZauto_VERSION_MAJOR ${CMAKE_PROJECT_VERSION_MAJOR})
 set (SZauto_VERSION_MINOR ${CMAKE_PROJECT_VERSION_MINOR})
@@ -33,9 +33,9 @@ endif()
 find_package(PkgConfig)
 pkg_search_module(ZSTD IMPORTED_TARGET libzstd)
 
-add_subdirectory (src)
+add_subdirectory(src)
 
 if(BUILD_TESTING)
-  add_subdirectory (test)
+  add_subdirectory(test)
 endif()
 
