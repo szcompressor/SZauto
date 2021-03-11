@@ -26,10 +26,10 @@ target_compile_options(sz_cpp PRIVATE
   )
 
 target_link_libraries(
-  sz_cpp PUBLIC PkgConfig::ZSTD
+  sz_cpp PUBLIC ${ZSTD_dep}
   )
 
-install(TARGETS sz_cpp EXPORT szautoConfig
+install(TARGETS sz_cpp ${thirdparty_export} EXPORT szautoConfig
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

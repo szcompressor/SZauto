@@ -28,10 +28,20 @@ if(HAVE_NO_OMIT_FRAME_POINTER)
   set(NO_OMIT_FRAME_POINTER_FLAG "-fno-omit-frame-pointer")
 endif()
 
-
+#by default pass no 3rd party exports
+set(thirdparty_export "")
 
 find_package(PkgConfig)
+
+
 pkg_search_module(ZSTD IMPORTED_TARGET libzstd)
+if(ZSTD_FOUND)
+  set(ZSTD_dep PkgConfig::ZSTD)
+else()
+  add_subdirectory(zstd)
+  set(ZSTD_dep zstd)
+  list(APPEND thirdparty_export "zstd")
+endif()
 
 add_subdirectory(src)
 
