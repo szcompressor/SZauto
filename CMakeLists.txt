@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required (VERSION 3.13)
 project(SZauto VERSION "1.0")
 set (SZauto_VERSION_MAJOR ${CMAKE_PROJECT_VERSION_MAJOR})
 set (SZauto_VERSION_MINOR ${CMAKE_PROJECT_VERSION_MINOR})
