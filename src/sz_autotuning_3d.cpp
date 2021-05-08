@@ -127,6 +127,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
         if (min > data[i]) min = data[i];
     }
     double precision = relative_eb * (max - min);
+    assert(precision!=0);
 
     if (baseline) {
         sz_params baseline_param(false, 6, 3, 0, true, false, true, false, precision);
