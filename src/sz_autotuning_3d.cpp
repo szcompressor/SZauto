@@ -7,7 +7,7 @@
 #include "sz_utils.hpp"
 #include "sz_def.hpp"
 #include <list>
-
+#include <cassert>
 using namespace std;
 
 
