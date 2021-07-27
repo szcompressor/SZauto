@@ -10,10 +10,6 @@ target_compile_features(sz_cpp
   PUBLIC
   cxx_std_14
   )
-target_compile_definitions(sz_cpp PUBLIC 
-  $<BUILD_INTERFACE:POLY_REGRESSION_COEF_FILE="${PROJECT_SOURCE_DIR}/data/PolyRegressionCoefAux3D.f32">
-  $<INSTALL_INTERFACE:POLY_REGRESSION_COEF_FILE="${CMAKE_INSTALL_DATADIR}/szauto/PolyRegressionCoefAux3D.f32">
-  )
 target_include_directories(
   sz_cpp 
   PUBLIC
