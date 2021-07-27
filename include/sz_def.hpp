@@ -1,7 +1,7 @@
 #ifndef _sz_def_hpp
 #define _sz_def_hpp
 #define SZAUTO_MAJOR_VERSION 1
-#define SZAUTO_MINOR_VERSION 0
+#define SZAUTO_MINOR_VERSION 1
 #define SZAUTO_PATCH_VERSION 0
 #define SZAUTO_REVISION_VERSION 0
 
