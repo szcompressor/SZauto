@@ -30,4 +30,5 @@ See COPYRIGHT in top-level directory.
 
 Version		New features
 
+* SZauto 1.1.0  Second release
 * SZauto 1.0.0  First release
