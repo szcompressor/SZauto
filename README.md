@@ -22,8 +22,19 @@ See COPYRIGHT in top-level directory.
 ## 3rd party libraries/tools
 * Zstandard (https://facebook.github.io/zstd/). Zstandard v1.3.5 is included and will be used if libzstd can be found by pkg-config.
 ## Installation
+* mkdir build && cd build
+* cmake .. -DCMAKE_INSTALL_PREFIX:PATH=[INSTALL_DIR]
+* make
+* make install 
+
+Then, you'll find all the executables in [INSTALL_DIR]/bin and header files in [INSTALL_DIR]/include
 
 ## Testing Examples
+You can use the executable 'sz_auto' command to do the compression/decompression.
+
+* ./sz_auto testfloat_8_8_128.dat -3 8 8 128 1e-3
+
+The order of the dimensions is the same as the c array. For example, use '-3 r1 r2 r3' for data[r1][r2][r3]
 
 
 ## Version history

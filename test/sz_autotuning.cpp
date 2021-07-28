@@ -4,6 +4,11 @@
 using namespace std;
 
 int main(int argc, char **argv) {
+    if (argc < 6) {
+        printf("SZauto\nusage: %s data_file dim0 dim1 dim2 relative_error_bound\n", argv[0]);
+        printf("example: %s qmcpack.dat 33120 69 69 1e-3\n", argv[0]);
+        exit(0);
+    }
     size_t num_elements = 0;
     float *data = readfile<float>(argv[1], num_elements);
     float max = data[0];
@@ -18,13 +23,13 @@ int main(int argc, char **argv) {
     float eb = atof(argv[5]);
     size_t compressed_size;
     if (argc <= 6) {
-        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true, true);
+        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, false, true, true);
         free(data);
         return 0;
     }
     float sample_ratio = atof(argv[6]);
     if (argc <= 7) {
-        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, true, true, true, sample_ratio);
+        sz_compress_autotuning_3d<float>(data, r1, r2, r3, eb, compressed_size, false, true, true, sample_ratio);
         free(data);
         return 0;
     }
