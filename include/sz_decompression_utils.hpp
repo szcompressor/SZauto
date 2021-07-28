@@ -71,7 +71,7 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 	float * prev_reg_params = reg_params;
 	float * reg_params_pos = reg_params + RegCoeffNum3d;
 	const int * type_pos = (const int *) reg_type;
-	for(int i=0; i<reg_count; i++){
+	for(size_t i=0; i<reg_count; i++){
 		for(int j=0; j<RegCoeffNum3d; j++){
 			*reg_params_pos = recover(*prev_reg_params, reg_precisions[j], *(type_pos++), RegCoeffRadius, reg_unpredictable_data_pos);
 			prev_reg_params ++, reg_params_pos ++;
@@ -83,7 +83,7 @@ decode_regression_coefficients(const unsigned char *& compressed_pos, size_t reg
 
 template<typename T>
 float *
-decode_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision, const sz_params &params){
+decode_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int , T , const sz_params &params){
     size_t reg_unpredictable_count = 0;
     read_variable_from_src(compressed_pos, reg_unpredictable_count);
     const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
@@ -100,7 +100,7 @@ decode_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t 
     float * prev_reg_params = reg_params;
     float * reg_params_pos = reg_params + RegCoeffNum3d;
     const int * type_pos = (const int *) reg_type;
-    for(int i=0; i<reg_count; i++){
+    for(size_t i=0; i<reg_count; i++){
         for(int j=0; j<RegCoeffNum3d; j++){
             *reg_params_pos = recover(*prev_reg_params, reg_precisions[j], *(type_pos++), RegCoeffRadius, reg_unpredictable_data_pos);
             prev_reg_params ++, reg_params_pos ++;
@@ -111,7 +111,7 @@ decode_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t 
 }
 template<typename T>
 float *
-decode_poly_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int block_size, T precision, const sz_params &params){
+decode_poly_regression_coefficients_v2(const unsigned char *& compressed_pos, size_t reg_count, int /*block_size*/, T /*precision*/, const sz_params &params){
 	size_t reg_unpredictable_count = 0;
 	read_variable_from_src(compressed_pos, reg_unpredictable_count);
 	const float * reg_unpredictable_data_pos = (const float *) compressed_pos;
@@ -133,7 +133,7 @@ decode_poly_regression_coefficients_v2(const unsigned char *& compressed_pos, si
 	float * prev_reg_params = reg_params;
 	float * reg_params_pos = reg_params + RegPolyCoeffNum3d;
 	const int * type_pos = (const int *) reg_type;
-	for(int i=0; i<reg_count; i++){
+	for(size_t i=0; i<reg_count; i++){
 		for(int j=0; j<RegPolyCoeffNum3d; j++){
 			*reg_params_pos = recover(*prev_reg_params, reg_precisions_poly[j], *(type_pos++), RegCoeffRadius, reg_unpredictable_data_pos);
 			prev_reg_params ++, reg_params_pos ++;

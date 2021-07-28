@@ -145,9 +145,9 @@ struct DSize_3d {
     size_t num_blocks;
     size_t dim0_offset;
     size_t dim1_offset;
-    int sample_nx;
-    int sample_ny;
-    int sample_nz;
+    size_t sample_nx;
+    size_t sample_ny;
+    size_t sample_nz;
     size_t sample_distance;
 
     DSize_3d(size_t r1, size_t r2, size_t r3, int bs) {

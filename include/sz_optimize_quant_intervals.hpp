@@ -2,6 +2,7 @@
 #define _sz_optimize_quant_intervals_hpp
 
 #include <vector>
+#include "sz_compression_utils.hpp"
 
 unsigned int
 static estimate_quantization_intervals(const std::vector<size_t>& intervals, size_t sample_count){
@@ -44,7 +45,7 @@ sample_rough_mean_3d(const T * data, size_t r1, size_t r2, size_t r3, size_t sam
 	size_t offset_count = 0;
 	size_t offset_count_2 = 0;
 	size_t mean_count = 0;
-	while(data_pos - data < len){
+	while(static_cast<size_t>(data_pos - data) < len){
 		mean += *data_pos;
 		mean_count ++;
 		data_pos += sample_distance;
@@ -84,7 +85,7 @@ optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double p
 	size_t pred_index = 0;
 	float pred_err = 0;
 	int radius = (QuantIntvMeanCapacity >> 1);
-	while(data_pos - data < len){
+	while(static_cast<size_t>(data_pos - data) < len){
 		pred_value = lorenzo_predict_3d(data_pos, r23, r3);
 		pred_err = fabs(pred_value - *data_pos);
 		if(pred_err < precision) freq_count ++;
@@ -100,7 +101,7 @@ optimize_quant_invl_3d(const T * data, size_t r1, size_t r2, size_t r3, double p
 		if(freq_index <= 0){
 			freq_intervals[0] ++;
 		}
-		else if(freq_index >= freq_intervals.size()){
+		else if(freq_index >= static_cast<ptrdiff_t>(freq_intervals.size())){
 			freq_intervals[freq_intervals.size() - 1] ++;
 		}
 		else{

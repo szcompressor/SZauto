@@ -12,7 +12,7 @@ template<typename T>
 void
 prediction_and_decompression_3d(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator,
-	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& params){
+	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& ){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -55,7 +55,7 @@ template<typename T>
 void
 prediction_and_decompression_3d_with_border_prediction(const DSize_3d& size, const meanInfo<T>& mean_info, double precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator,
-	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& params){
+	const int * type, const T * unpredictable_data_pos, T * dec_data, const sz_params& ){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;
@@ -101,7 +101,7 @@ template<typename T>
 void
 prediction_and_decompression_3d_with_knl_optimization(const DSize_3d& size, const meanInfo<T>& mean_info, T precision,
 	int intv_radius, const float * reg_params, const unsigned char * indicator,
-	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data, const sz_params& params){
+	const int * type, int * unpred_count_buffer, const T * unpred_data_buffer, const int offset, T * dec_data, const sz_params&){
 	const int * type_pos = type;
 	const unsigned char * indicator_pos = indicator;
 	const float * reg_params_pos = reg_params;

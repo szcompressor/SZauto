@@ -5,7 +5,9 @@ add_library (sz_cpp
 	sz_decompression_utils.cpp
 	sz_decompress_3d.cpp
 	sz_huffman.cpp
-	sz_lossless.cpp)
+	sz_lossless.cpp
+  sz_regression_utils.cpp
+  )
 target_compile_features(sz_cpp
   PUBLIC
   cxx_std_14
@@ -29,10 +31,5 @@ install(TARGETS sz_cpp ${thirdparty_export} EXPORT szautoConfig
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(FILES 
-  ${PROJECT_SOURCE_DIR}/data/PolyRegressionCoefAux1D.f32
-  ${PROJECT_SOURCE_DIR}/data/PolyRegressionCoefAux2D.f32
-  ${PROJECT_SOURCE_DIR}/data/PolyRegressionCoefAux3D.f32
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/szauto)
 install(EXPORT szautoConfig NAMESPACE szauto:: DESTINATION ${CMAKE_INSTALL_DATADIR}/szauto/cmake)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/szauto)
