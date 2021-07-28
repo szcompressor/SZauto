@@ -5,7 +5,9 @@ add_library (sz_cpp
 	sz_decompression_utils.cpp
 	sz_decompress_3d.cpp
 	sz_huffman.cpp
-	sz_lossless.cpp)
+	sz_lossless.cpp
+  sz_regression_utils.cpp
+  )
 target_compile_features(sz_cpp
   PUBLIC
   cxx_std_14

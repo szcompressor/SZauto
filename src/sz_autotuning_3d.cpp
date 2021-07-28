@@ -42,6 +42,7 @@ sz_compress_info sz_compress_decompress_3d(T *data, size_t num_elements, int r1,
         clock_gettime(CLOCK_REALTIME, &start);
         size_t lossless_output = sz_lossless_decompress(ZSTD_COMPRESSOR, result_after_lossless, lossless_outsize, &result,
                                                         result_size);
+        (void)lossless_output;
         T *dec_data = sz_decompress_3d_knl<T>(result, r1, r2, r3);
         clock_gettime(CLOCK_REALTIME, &end);
         compressInfo.decompress_time =
@@ -61,7 +62,7 @@ sz_compress_info sz_compress_decompress_3d(T *data, size_t num_elements, int r1,
 }
 
 template<typename T>
-unsigned char *do_compress(T *data, size_t num_elements, int r1, int r2, int r3, float precision,
+unsigned char *do_compress(T *data, size_t , int r1, int r2, int r3, float precision,
                            sz_params params, size_t &compressed_size) {
     size_t sz_result_size = 0;
     sz_compress_info compressInfo;
@@ -78,6 +79,7 @@ T *sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, 
 
     unsigned char *decompressed_lossless;
     size_t lossless_output = sz_lossless_decompress_v2(ZSTD_COMPRESSOR, compressed, compress_size, &decompressed_lossless);
+    (void)lossless_output;
     T *dec_data = sz_decompress_3d_knl<T>(decompressed_lossless, r1, r2, r3);
     free(decompressed_lossless);
     return dec_data;
@@ -85,7 +87,7 @@ T *sz_decompress_autotuning_3d(unsigned char *compressed, size_t compress_size, 
 
 
 template<typename T>
-sz_compress_info do_compress_sampling(const T *data, size_t num_elements, int r1, int r2, int r3, float precision,
+sz_compress_info do_compress_sampling(const T *data, size_t , int r1, int r2, int r3, float precision,
                                       sz_params params) {
     size_t result_size = 0;
     sz_compress_info compressInfo;
@@ -122,7 +124,7 @@ sz_compress_autotuning_3d(T *data, size_t r1, size_t r2, size_t r3, double relat
     size_t num_elements = r1 * r2 * r3;
     float max = data[0];
     float min = data[0];
-    for (int i = 1; i < num_elements; i++) {
+    for (size_t i = 1; i < num_elements; i++) {
         if (max < data[i]) max = data[i];
         if (min > data[i]) min = data[i];
     }
@@ -535,7 +537,7 @@ void sz_compress_manualtuning_3d(T *data, size_t num_elements, int r1, int r2, i
     sz_params best_params_stage1;
     for (auto use_lorenzo:{false, true}) {
         for (auto use_lorenzo_2layer:{false, true}) {
-            auto pred_dim_set = {3};
+          std::vector<int> pred_dim_set = {3};
             if (use_lorenzo || use_lorenzo_2layer) {
                 pred_dim_set = {1, 2, 3};
             }

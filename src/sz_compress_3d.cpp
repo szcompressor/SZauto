@@ -194,7 +194,7 @@ prediction_and_quantization_3d_with_knl_optimization(const T *data, const DSize_
                                                      int capacity, int intv_radius, unsigned char *indicator, int *type,
                                                      int *reg_params_type, float *&reg_unpredictable_data_pos,
                                                      int *unpred_count_buffer, T *unpred_data_buffer, size_t offset,
-                                                     const sz_params &params) {
+                                                     const sz_params &) {
     const float noise = precision * LorenzeNoise3d;
     int *type_pos = type;
     unsigned char *indicator_pos = indicator;
@@ -366,7 +366,7 @@ prediction_3d_sampling(const T *data, DSize_3d &size,
     }
 
 
-    size_t r1 = size.d1 - params.lorenzo_padding_layer;
+    //size_t r1 = size.d1 - params.lorenzo_padding_layer;
     size_t r2 = size.d2 - params.lorenzo_padding_layer;
     size_t r3 = size.d3 - params.lorenzo_padding_layer;
     const T *data_pos = data;// + layer * r2*r3 + layer * r3 + layer;

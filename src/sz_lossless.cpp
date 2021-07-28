@@ -69,7 +69,7 @@ unsigned long sz_lossless_decompress(int losslessCompressor, unsigned char* comp
 	return outSize;
 }
 
-unsigned long sz_lossless_decompress_v2(int losslessCompressor, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData)
+unsigned long sz_lossless_decompress_v2(int /*losslessCompressor*/, unsigned char* compressBytes, unsigned long cmpSize, unsigned char** oriData)
 {
 	unsigned long dataLength = 0;
 	const unsigned char *compressBytesPos = compressBytes;

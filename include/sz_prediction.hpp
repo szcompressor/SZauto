@@ -1,6 +1,8 @@
 #ifndef _sz_prediction_hpp
 #define _sz_prediction_hpp
 
+#include <cstddef>
+
 template<typename T>
 inline T
 regression_predict_3d(const float * reg_params_pos, int x, int y, int z){
@@ -19,26 +21,26 @@ regression_predict_3d_poly(const float * reg_params_pos, int x, int y, int z){
 
 template<typename T>
 inline T
-lorenzo_predict_1d(const T * data_pos, size_t dim0_offset){
+lorenzo_predict_1d(const T * data_pos, size_t){
 	return data_pos[-1];
 }
 
 template<typename T>
 inline T
-lorenzo_predict_1d_2layer(const T * data_pos, size_t dim0_offset){
+lorenzo_predict_1d_2layer(const T * data_pos, size_t ){
     return 2 * data_pos[-1] - data_pos[-2];
 }
 
 
 template<typename T>
 inline T
-lorenzo_predict_2d(const T * data_pos, size_t dim0_offset, size_t dim1_offset){
+lorenzo_predict_2d(const T * data_pos, size_t dim0_offset, size_t ){
 	return data_pos[-1] + data_pos[-dim0_offset] - data_pos[-1 - dim0_offset];
 }
 
 template<typename T>
 inline T
-lorenzo_predict_2d_2layer(const T * data_pos, size_t dim0_offset, size_t dim1_offset){
+lorenzo_predict_2d_2layer(const T * data_pos, size_t dim0_offset, size_t){
     return 2 * data_pos[-dim0_offset]
            - data_pos[-2 * dim0_offset]
            + 2 * data_pos[-1]
