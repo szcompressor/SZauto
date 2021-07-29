@@ -40,6 +40,6 @@ The order of the dimensions is the same as the c array. For example, use '-3 r1 
 ## Version history
 
 Version		New features
-
+* SZauto 1.2.1  update readme
 * SZauto 1.1.0  Second release
 * SZauto 1.0.0  First release
